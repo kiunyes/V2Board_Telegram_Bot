@@ -309,7 +309,7 @@ class Module:
                 Plan = Module.getPlanName(order[i][3])
                 Payment = Module.getPaymentName(order[i][5])
                 Code = {
-                    'Type': ['新购', '续费', '升级'],
+                    'Type': ['无','新购', '续费', '升级'],
                     'Period': {
                         'month_price': '月付',
                         'quarter_price': '季付',
