@@ -273,7 +273,7 @@ class Module:
         print(current_list)
         if current_list['ticket'] != 0 and len(ticket) > current_list['ticket']:
             for i in range(current_list['ticket'], len(ticket)):
-                print(i)
+                # id,user_id,subject,level,status,reply_status
                 Result, User = Module.getUser('id', ticket[i][1])
                 Email = User['email']
                 Subject = ticket[i][2]
@@ -289,9 +289,9 @@ class Module:
                 text = '📠*新的工单*\n\n'
                 text = f'{text}👤*用户*：`{Email}`\n'
                 text = f'{text}📩*主题*：{Subject}\n'
-                text = f'{text}🔔*级别*：{Level}\n'
-                text = f'{text}🔰*状态*：{Status}\n'
-                text = f'{text}📝*答复*：{Reply}\n'
+                text = f'{text}🔔*工单级别*：{Level}\n'
+                text = f'{text}🔰*工单状态*：{Status}\n'
+                text = f'{text}📝*答复状态*：{Reply}\n'
 
                 keyboard = [[InlineKeyboardButton(
                     text='回复工单', url=f"{Config.v2_url}/admin#/ticket/{i+1}")]]
@@ -302,9 +302,44 @@ class Module:
                     parse_mode='Markdown',
                     reply_markup=reply_markup
                 )
-                # id,user_id,subject,level,status,reply_status
         if current_list['order'] != 0 and len(order) > current_list['order']:
-            pass
+            for i in range(current_list['order'], len(order)):
+                Result, User = Module.getUser('id', order[i][2])
+                Email = User['email']
+                Plan = Module.getPlanName(order[i][3])
+                Payment = Module.getPaymentName(order[i][5])
+                Code = {
+                    'Type': ['新购', '续费', '升级'],
+                    'Period': {
+                        'month_price': '月付',
+                        'quarter_price': '季付',
+                        'half_year_price': '半年付',
+                        'year_price': '年付',
+                        'two_year_price': '两年付',
+                        'three_year_price': '三年付',
+                        'onetime_price': '一次性',
+                        'reset_price': '重置包',
+                    }
+                }
+                Type = Code['Type'][order[i][6]]
+                Period = Code['Period'][order[i][7]]
+                Amount = round(order[i][10] / 100, 2)
+                Paid_Time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(order[i][21]))
+
+                text = '📠*新的订单*\n\n'
+                text = f'{text}👤*用户*：`{Email}`\n'
+                text = f'{text}🛍*套餐*：{Plan}\n'
+                text = f'{text}💵*支付*：{Payment}\n'
+                text = f'{text}📥*类型*：{Type}\n'
+                text = f'{text}📅*时长*：{Period}\n'
+                text = f'{text}🏷*价格*：{Amount}\n'
+                text = f'{text}🕰*支付时间*：{Paid_Time}\n'
+
+                bot.send_message(
+                    chat_id=Config.tg_admin,
+                    text=text,
+                    parse_mode='Markdown'
+                )
         current_list = {
             'ticket': len(ticket),
             'order': len(order)
@@ -324,7 +359,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM v2_order")
+                "SELECT * FROM v2_order WHERE `total_amount` > '0' AND `status` = '3'")
             result = cursor.fetchall()
             return result
 
@@ -427,6 +462,14 @@ class Module:
                 "SELECT * FROM v2_user WHERE invite_user_id =  %s", (uid))
             result = cursor.fetchall()
             return len(result)
+
+    def getPaymentName(id):
+        db.ping(reconnect=True)
+        with db.cursor() as cursor:
+            cursor.execute(
+                "SELECT name FROM v2_payment WHERE id =  %s", (id))
+            result = cursor.fetchone()
+            return result[0]
 
 
 def main() -> None:
