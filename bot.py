@@ -7,7 +7,7 @@ import time
 import threading
 from sshtunnel import SSHTunnelForwarder
 
-from telegram import Update, Bot, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, Bot, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
 import Message
@@ -309,7 +309,7 @@ class Module:
                 Plan = Module.getPlanName(order[i][3])
                 Payment = Module.getPaymentName(order[i][5])
                 Code = {
-                    'Type': ['无','新购', '续费', '升级'],
+                    'Type': ['无', '新购', '续费', '升级'],
                     'Period': {
                         'month_price': '月付',
                         'quarter_price': '季付',
@@ -324,7 +324,8 @@ class Module:
                 Type = Code['Type'][order[i][6]]
                 Period = Code['Period'][order[i][7]]
                 Amount = round(order[i][10] / 100, 2)
-                Paid_Time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(order[i][21]))
+                Paid_Time = time.strftime(
+                    "%Y-%m-%d %H:%M:%S", time.localtime(order[i][21]))
 
                 text = '📠*新的订单*\n\n'
                 text = f'{text}👤*用户*：`{Email}`\n'
@@ -477,6 +478,7 @@ def main() -> None:
 
     dispatcher = updater.dispatcher
 
+    bot.deleteMyCommands()
     dispatcher.add_handler(CommandHandler("s", s, run_async=True))
     dispatcher.add_handler(CommandHandler("ping", ping, run_async=True))
     dispatcher.add_handler(CommandHandler("bind", bind, run_async=True))
@@ -484,10 +486,20 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("mysub", mysub, run_async=True))
     dispatcher.add_handler(CommandHandler("myinfo", myinfo, run_async=True))
     dispatcher.add_handler(CommandHandler("myusage", myusage, run_async=True))
-    dispatcher.add_handler(CommandHandler(
-        "myinvite", myinvite, run_async=True))
+    dispatcher.add_handler(CommandHandler("myinvite", myinvite, run_async=True))
     dispatcher.add_handler(CommandHandler("buyplan", buyplan, run_async=True))
     dispatcher.add_handler(CommandHandler("website", website, run_async=True))
+    commands = [BotCommand('ping', '获取当前聊天信息'),
+                BotCommand('bind', '绑定账号信息到该TG'),
+                BotCommand('unbind', '解绑该账号的TG信息'),
+                BotCommand('mysub', '获取我的订阅链接'),
+                BotCommand('myinfo', '获取我的订阅信息'),
+                BotCommand('myusage', '获取我的使用信息'),
+                BotCommand('myinvite', '获取我的邀请链接'),
+                BotCommand('buyplan', '打开购买商店'),
+                BotCommand('website', '打开网站链接'),
+                ]
+    bot.setMyCommands(commands)
 
     updater.start_polling()
     updater.idle()
