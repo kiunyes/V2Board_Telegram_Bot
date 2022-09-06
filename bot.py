@@ -479,27 +479,25 @@ def main() -> None:
     dispatcher = updater.dispatcher
 
     bot.deleteMyCommands()
-    dispatcher.add_handler(CommandHandler("s", s, run_async=True))
-    dispatcher.add_handler(CommandHandler("ping", ping, run_async=True))
-    dispatcher.add_handler(CommandHandler("bind", bind, run_async=True))
-    dispatcher.add_handler(CommandHandler("unbind", unbind, run_async=True))
-    dispatcher.add_handler(CommandHandler("mysub", mysub, run_async=True))
-    dispatcher.add_handler(CommandHandler("myinfo", myinfo, run_async=True))
-    dispatcher.add_handler(CommandHandler("myusage", myusage, run_async=True))
-    dispatcher.add_handler(CommandHandler("myinvite", myinvite, run_async=True))
-    dispatcher.add_handler(CommandHandler("buyplan", buyplan, run_async=True))
-    dispatcher.add_handler(CommandHandler("website", website, run_async=True))
-    commands = [BotCommand('ping', '获取当前聊天信息'),
-                BotCommand('bind', '绑定账号信息到该TG'),
-                BotCommand('unbind', '解绑该账号的TG信息'),
-                BotCommand('mysub', '获取我的订阅链接'),
-                BotCommand('myinfo', '获取我的订阅信息'),
-                BotCommand('myusage', '获取我的使用信息'),
-                BotCommand('myinvite', '获取我的邀请链接'),
-                BotCommand('buyplan', '打开购买商店'),
-                BotCommand('website', '打开网站链接'),
-                ]
-    bot.setMyCommands(commands)
+
+    commands = {
+        'ping': [ping, '获取当前聊天信息'],
+        'bind': [bind, '绑定账号信息到该TG'],
+        'unbind': [unbind, '解绑该账号的TG信息'],
+        'mysub': [mysub, '获取我的订阅链接'],
+        'myinfo': [myinfo, '获取我的订阅信息'],
+        'myusage': [myusage, '获取我的使用信息'],
+        'myinvite': [myinvite, '获取我的邀请链接'],
+        'buyplan': [buyplan, '打开购买商店'],
+        'website': [website, '打开网站链接'],
+    }
+    commands_list = []
+    for i in commands:
+        print(i,commands[i][1])
+        dispatcher.add_handler(CommandHandler(i, commands[i][0], run_async=True))
+        commands_list.append(BotCommand(i,commands[i][1]))
+
+    bot.setMyCommands(commands_list)
 
     updater.start_polling()
     updater.idle()
