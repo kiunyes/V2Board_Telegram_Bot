@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import logging
-import requests
+from unittest import result
 import pymysql
 import time
 import threading
+import pytz
+import datetime
 from sshtunnel import SSHTunnelForwarder
 
 from telegram import Update, Bot, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
@@ -13,6 +15,8 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 import Message
 import Config
 import Command
+import Schedule
+import Handler
 
 # Enable logging
 logging.basicConfig(
@@ -43,6 +47,9 @@ current_list = {
     'ticket': 0,
     'order': 0
 }
+tz = pytz.timezone('Asia/Shanghai')
+sysday = datetime.datetime.now(tz).strftime("%Y-%m-%d")
+task_autoSend = False
 
 
 def s(update: Update, context: CallbackContext) -> None:
@@ -76,18 +83,18 @@ def bind(update: Update, context: CallbackContext) -> None:
     gid = update.message.chat.id
     chat_type = update.message.chat.type
 
-    result, user = Module.getUser('telegram_id', tid)
+    result, user = Handler.getUser('telegram_id', tid)
 
     if chat_type == 'private':
         if result is False:
             if len(context.args) == 2:
                 email = context.args[0]
                 password = context.args[1]
-                if Module.onLogin(email, password) is True:
-                    result, tig = Module.getTGbyMail(email)
+                if Handler.onLogin(email, password) is True:
+                    result, tig = Handler.getTGbyMail(email)
                     if result is False:
                         reply(Message.Success_Bind)
-                        Command.onBind(tid, email)
+                        Handler.onBind(tid, email)
                     else:
                         reply(Message.Error_BindOther)
                 else:
@@ -111,7 +118,7 @@ def unbind(update: Update, context: CallbackContext) -> None:
     gid = update.message.chat.id
     chat_type = update.message.chat.type
 
-    result, user = Module.getUser('telegram_id', tid)
+    result, user = Handler.getUser('telegram_id', tid)
 
     if chat_type == 'private':
         if result is False:
@@ -120,11 +127,11 @@ def unbind(update: Update, context: CallbackContext) -> None:
             if len(context.args) == 2:
                 email = context.args[0]
                 password = context.args[1]
-                if Module.onLogin(email, password) is True:
-                    result, id = Module.getTGbyMail(email)
+                if Handler.onLogin(email, password) is True:
+                    result, id = Handler.getTGbyMail(email)
                     if id == tid:
                         reply(Message.Success_UnBind)
-                        Command.onUnBind(email)
+                        Handler.onUnBind(email)
                     else:
                         reply(Message.Error_UnBindNoMatch)
                 else:
@@ -146,7 +153,7 @@ def mysub(update: Update, context: CallbackContext) -> None:
     gid = update.message.chat.id
     chat_type = update.message.chat.type
 
-    result, user = Module.getUser('telegram_id', tid)
+    result, user = Handler.getUser('telegram_id', tid)
 
     if chat_type == 'private':
         if result is False:
@@ -170,7 +177,7 @@ def myinfo(update: Update, context: CallbackContext) -> None:
     gid = update.message.chat.id
     chat_type = update.message.chat.type
 
-    result, user = Module.getUser('telegram_id', tid)
+    result, user = Handler.getUser('telegram_id', tid)
 
     if chat_type == 'private' or gid == Config.tg_group:
         if result is False:
@@ -191,12 +198,12 @@ def myusage(update: Update, context: CallbackContext) -> None:
     gid = update.message.chat.id
     chat_type = update.message.chat.type
 
-    result, user = Module.getUser('telegram_id', tid)
+    result, user = Handler.getUser('telegram_id', tid)
     if chat_type == 'private' or gid == Config.tg_group:
         if result is False:
             callback = reply(Message.Error_NotBind)
         else:
-            result, statlist = Module.getUserStat(user['uid'])
+            result, statlist = Handler.getUserStat(user['uid'])
             if result is True:
                 text, reply_markup = Command.onMyUsage(statlist)
                 callback = reply(text, reply_markup=reply_markup)
@@ -212,15 +219,15 @@ def myinvite(update: Update, context: CallbackContext) -> None:
     gid = update.message.chat.id
     chat_type = update.message.chat.type
 
-    result, user = Module.getUser('telegram_id', tid)
+    result, user = Handler.getUser('telegram_id', tid)
 
     if chat_type == 'private' or gid == Config.tg_group:
         if result is False:
             callback = reply(Message.Error_NotBind)
         else:
-            invite_code = Module.getInviteCode(user['uid'])
+            invite_code = Handler.getInviteCode(user['uid'])
             if invite_code is not None:
-                invite_times = Module.getInviteTimes(user['uid'])
+                invite_times = Handler.getInviteTimes(user['uid'])
                 text = Command.onMyInvite(invite_code, invite_times)
                 callback = reply(text)
             else:
@@ -268,33 +275,17 @@ class Module:
     def autoSend():
         # 待优化
         global current_list
-        ticket = Module.getNewTicket()
-        order = Module.getNewOrder()
+        global task_autoSend
+        global sysday
+        ticket = Handler.getNewTicket()
+        order = Handler.getNewOrder()
         if current_list['ticket'] != 0 and len(ticket) > current_list['ticket']:
             for i in range(current_list['ticket'], len(ticket)):
                 # id,user_id,subject,level,status,reply_status
-                Result, User = Module.getUser('id', ticket[i][1])
-                Email = User['email']
-                Subject = ticket[i][2]
-                Code = {
-                    'Level': ['低', '中', '高'],
-                    'Status': ['开放', '关闭'],
-                    'Reply': ['已回复', '待回复'],
-                }
-                Level, Status, Reply = ticket[i][3], ticket[i][4], ticket[i][5]
-                Level = Code['Level'][Level]
-                Status = Code['Status'][Status]
-                Reply = Code['Reply'][Reply]
-                text = '📠*新的工单*\n\n'
-                text = f'{text}👤*用户*：`{Email}`\n'
-                text = f'{text}📩*主题*：{Subject}\n'
-                text = f'{text}🔔*工单级别*：{Level}\n'
-                text = f'{text}🔰*工单状态*：{Status}\n'
-                text = f'{text}📝*答复状态*：{Reply}\n'
+                Result, User = Handler.getUser('id', ticket[i][1])
+                text, reply_markup = Schedule.onTicket(
+                    User['email'], ticket, i)
 
-                keyboard = [[InlineKeyboardButton(
-                    text='回复工单', url=f"{Config.v2_url}/admin#/ticket/{i+1}")]]
-                reply_markup = InlineKeyboardMarkup(keyboard)
                 bot.send_message(
                     chat_id=Config.tg_admin,
                     text=text,
@@ -307,37 +298,8 @@ class Module:
                 Total_amount = order[i][10]
                 Status = order[i][17]
                 if Total_amount > 0 and Status == 3 and order[i][5] is not None:
-                    Result, User = Module.getUser('id', order[i][2])
-                    Email = User['email']
-                    Plan = Module.getPlanName(order[i][3])
-                    Payment = Module.getPaymentName(order[i][5])
-                    Code = {
-                        'Type': ['无', '新购', '续费', '升级'],
-                        'Period': {
-                            'month_price': '月付',
-                            'quarter_price': '季付',
-                            'half_year_price': '半年付',
-                            'year_price': '年付',
-                            'two_year_price': '两年付',
-                            'three_year_price': '三年付',
-                            'onetime_price': '一次性',
-                            'reset_price': '重置包',
-                        }
-                    }
-                    Type = Code['Type'][order[i][6]]
-                    Period = Code['Period'][order[i][7]]
-                    Amount = round(Total_amount / 100, 2)
-                    Paid_Time = time.strftime(
-                        "%Y-%m-%d %H:%M:%S", time.localtime(order[i][21]))
-
-                    text = '📠*新的订单*\n\n'
-                    text = f'{text}👤*用户*：`{Email}`\n'
-                    text = f'{text}🛍*套餐*：{Plan}\n'
-                    text = f'{text}💵*支付*：{Payment}\n'
-                    text = f'{text}📥*类型*：{Type}\n'
-                    text = f'{text}📅*时长*：{Period}\n'
-                    text = f'{text}🏷*价格*：{Amount}\n'
-                    text = f'{text}🕰*支付时间*：{Paid_Time}\n'
+                    Result, User = Handler.getUser('id', order[i][2])
+                    text = Schedule.onOrder(User['email'], order, i)
 
                     bot.send_message(
                         chat_id=Config.tg_admin,
@@ -347,131 +309,24 @@ class Module:
                     current_list['order'] = i+1
         else:
             current_list['order'] = len(order)
-        timer = threading.Timer(10, Module.autoSend)
+        # 待优化
+        if Schedule.Settings.send_serverdata is True:
+            if task_autoSend is False:
+                result,text = Schedule.onTodayData()
+                if result is True:
+                    bot.send_message(
+                        chat_id=Config.tg_group,
+                        text=text,
+                        parse_mode='Markdown'
+                    )
+                task_autoSend = True
+            else:
+                curday = datetime.datetime.now(tz).strftime("%Y-%m-%d")
+                if curday > sysday:
+                    task_autoSend = False
+                    sysday = curday
+        timer = threading.Timer(60, Module.autoSend)
         timer.start()
-
-    def getNewTicket():
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM v2_ticket")
-            result = cursor.fetchall()
-            return result
-
-    def getNewOrder():
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM v2_order")
-            result = cursor.fetchall()
-            return result
-
-    def onLogin(email, password):
-        login = {
-            "email": email,
-            "password": password
-        }
-        x = requests.post(
-            f'{Config.v2_url}/api/v1/passport/auth/login', login)
-        if x.status_code == 200:
-            return True
-        else:
-            return False
-
-    def getUser(t, id):
-        # args t = id or telegram_id
-        # return boolean, userdata as dict
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM v2_user WHERE `{t}` = {id}")
-            result = cursor.fetchone()
-            if result is None:
-                user = {}
-                return False, user
-            else:
-                user = {
-                    'uid': result[0],
-                    'tg': result[2],
-                    'email': result[3],
-                    'money': result[7],
-                    'time': result[12],
-                    'upload': result[13],
-                    'download': result[14],
-                    'total': result[15],
-                    'plan': result[23],
-                    'token': result[26],
-                    'expire': result[28],
-                    'register': result[29]}
-                return True, user
-
-    def getUserStat(uid):
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                f"SELECT * FROM v2_stat_user WHERE `user_id` = {uid}")
-            result = cursor.fetchall()
-            if len(result) < 1:
-                return False, result
-            else:
-                return True, result
-
-    def getTGbyMail(email):
-        # args email
-        # return boolean, TelegramID
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                f"SELECT telegram_id FROM v2_user WHERE email = {email}")
-            result = cursor.fetchone()
-            if result[0] is None:
-                return False, 0
-            else:
-                return True, result[0]
-
-    def getPlanName(planid):
-        # args planid
-        # return planname
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                f"SELECT name FROM v2_plan WHERE id = {planid}")
-            result = cursor.fetchone()
-            return result[0]
-
-    def getInviteCode(uid):
-        # args user id
-        # return code,status,pv
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                f"SELECT code,status,pv FROM v2_invite_code WHERE user_id = {uid}")
-            result = cursor.fetchone()
-            return result
-
-    def getPlanAll():
-        # return planID & Name (Only enable plan)
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                "SELECT id,name FROM v2_plan WHERE `show` = 1")
-            result = cursor.fetchall()
-            return result
-
-    def getInviteTimes(uid):
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                f"SELECT * FROM v2_user WHERE invite_user_id = {uid}")
-            result = cursor.fetchall()
-            return len(result)
-
-    def getPaymentName(id):
-        db.ping(reconnect=True)
-        with db.cursor() as cursor:
-            cursor.execute(
-                f"SELECT name FROM v2_payment WHERE id = {id}")
-            result = cursor.fetchone()
-            return result[0]
 
 
 def main() -> None:

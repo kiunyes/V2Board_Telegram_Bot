@@ -4,31 +4,25 @@ import datetime
 
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-import bot
 import Config
+import Handler
 
-Module = bot.Module
-db = bot.db
 # TineZone
 tz = pytz.timezone('Asia/Shanghai')
 
+
 def onBind(tid, email):
-    # args tid,email
-    db.ping(reconnect=True)
-    with db.cursor() as cursor:
-        cursor.execute(
-            "UPDATE v2_user SET telegram_id = %s WHERE email = %s", (int(tid), email))
+    Handler.onBind(tid, email)
+
 
 def onUnBind(email):
     # args email
-    db.ping(reconnect=True)
-    with db.cursor() as cursor:
-        cursor.execute(
-            "UPDATE v2_user SET telegram_id = NULL WHERE email = %s", (email))
+    Handler.onUnBind(email)
+
 
 def onBuyPlan():
     text = '📦*购买套餐*\n\n🌐点击下方按钮来前往购买地址'
-    plan = Module.getPlanAll()
+    plan = Handler.getPlanAll()
     keyboard = []
     url = f'{Config.v2_url}/#/plan/'
     for i in plan:
@@ -37,6 +31,7 @@ def onBuyPlan():
     reply_markup = InlineKeyboardMarkup(keyboard)
     return text, reply_markup
 
+
 def onWebsite():
     text = '🗺*前往网站*\n\n🌐点击下方按钮来前往网站地址'
     keyboard = [[InlineKeyboardButton(
@@ -44,12 +39,13 @@ def onWebsite():
     reply_markup = InlineKeyboardMarkup(keyboard)
     return text, reply_markup
 
+
 def onMyInfo(user):
     text = '📋*个人信息*\n'
     User_id = user['uid']
     Register_time = time.strftime(
         "%Y-%m-%d %H:%M:%S", time.localtime(user['register']))
-    Plan_id = Module.getPlanName(user['plan'])
+    Plan_id = Handler.getPlanName(user['plan'])
     Expire_time = '长期有效'
     if user['expire'] is not None:
         Expire_time = time.strftime(
@@ -74,6 +70,7 @@ def onMyInfo(user):
     text = f'{text}\n📊*上次使用：* {Data_Time}'
     return text
 
+
 def onMySub(token):
     header = '📚*订阅链接*\n\n🔮通用订阅地址为（点击即可复制）：\n'
     tolink = f'`{Config.v2_url}/api/v1/client/subscribe?token={token}`'
@@ -84,6 +81,7 @@ def onMySub(token):
 
     return text, reply_markup
 
+
 def onMyInvite(invite_code, invite_times):
     code = invite_code[0]
     header = '📚*邀请信息*\n\n🔮邀请地址为（点击即可复制）：\n'
@@ -92,6 +90,7 @@ def onMyInvite(invite_code, invite_times):
     text = f'{header}{tolink}{buttom}'
 
     return text
+
 
 def onMyUsage(stat):
     current_date = datetime.datetime.now(tz).strftime("%Y-%m-%d")
