@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import logging
-from unittest import result
 import pymysql
 import time
 import threading

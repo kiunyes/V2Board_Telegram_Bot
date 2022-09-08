@@ -1,9 +1,12 @@
-import Handler
-import Config
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 import time
 import datetime
 import pytz
+
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+
+import Handler
+import Config
+
 tz = pytz.timezone('Asia/Shanghai')
 
 
@@ -86,7 +89,7 @@ def onTodayData():
         for i in result:
             result_list.append(i)
         result_list.sort(key=lambda x: x[4], reverse=True)
-        index = 5 
+        index = 5
         text = '📊*昨日统计：*\n\n'
         text = f'{text}使用的前 {index} 个节点（不算倍率）：\n\n'
         for i in range(index):
