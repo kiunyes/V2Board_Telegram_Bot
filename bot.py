@@ -309,21 +309,20 @@ class Module:
         else:
             current_list['order'] = len(order)
         # 待优化
-        if Schedule.Settings.send_serverdata is True:
-            if task_autoSend is False:
-                result,text = Schedule.onTodayData()
-                if result is True:
-                    bot.send_message(
-                        chat_id=Config.tg_group,
-                        text=text,
-                        parse_mode='Markdown'
-                    )
-                task_autoSend = True
-            else:
-                curday = datetime.datetime.now(tz).strftime("%Y-%m-%d")
-                if curday > sysday:
-                    task_autoSend = False
-                    sysday = curday
+        if task_autoSend is False:
+            result, text = Schedule.onTodayData()
+            if result is True:
+                bot.send_message(
+                    chat_id=Config.tg_group,
+                    text=text,
+                    parse_mode='Markdown'
+                )
+            task_autoSend = True
+        else:
+            curday = datetime.datetime.now(tz).strftime("%Y-%m-%d")
+            if curday > sysday:
+                task_autoSend = False
+                sysday = curday
         timer = threading.Timer(60, Module.autoSend)
         timer.start()
 

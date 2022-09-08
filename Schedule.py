@@ -1,6 +1,7 @@
 import time
 import datetime
 import pytz
+import re
 
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -9,9 +10,12 @@ import Config
 
 tz = pytz.timezone('Asia/Shanghai')
 
-
+#每日推送开关
 class Settings:
-    send_serverdata = True
+    #服务器统计
+    send_server = True
+    #用户统计
+    send_user = True
 
 
 class Mapping:
@@ -80,22 +84,58 @@ def getTodayTimestemp():
     return timestemp
 
 
-def onTodayData():
-    result = Handler.getServerStat(getTodayTimestemp())
+def onSendServer():
+    result = Handler.getServerToday(getTodayTimestemp())
     result_list = []
-    if result is None:
-        return False, ''
-    else:
+    if result is not None:
         for i in result:
             result_list.append(i)
         result_list.sort(key=lambda x: x[4], reverse=True)
         index = 5
-        text = '📊*昨日统计：*\n\n'
-        text = f'{text}使用的前 {index} 个节点（不算倍率）：\n\n'
+        text = f'使用的前 {index} 的节点（不算倍率）：\n\n'
         for i in range(index):
             server = Handler.getServerName(
                 result_list[i][2], result_list[i][1])
             servername = server[4]
             download = round(result_list[i][4] / 1024 / 1024 / 1024, 2)
             text = f'{text}{servername} - `{download}` GB\n'
+        return text
+    else:
+        return ''
+
+
+def onSendUser():
+    result = Handler.getUserToday(getTodayTimestemp())
+    result_dict = {}
+    if result is not None:
+        for i in result:
+            if str(i[1]) not in result_dict:
+                result_dict[str(i[1])] = int(i[2])*i[4]
+            else:
+                result_dict[str(i[1])] += int(i[2])*i[4]
+        result_list = sorted(result_dict.items(),
+                             key=lambda x: x[1], reverse=True)
+        index = 5
+        text = f'流量使用前 {index} 名用户（已算倍率）：\n\n'
+        for i in range(index):
+            res, user = Handler.getUser('id', result_list[i][0])
+            uid = user['uid']
+            email = re.sub(r'\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}', '***@***.com', user['email'])
+            download = round(result_list[i][1] / 1024 / 1024 / 1024, 2)
+            text = f'{text}`{email}` - #`{uid}` - `{download}` GB\n'
+        return text
+    else:
+        return ''
+
+
+def onTodayData():
+    text = '📊*昨日统计：*\n\n'
+    if Settings.send_server is True:
+        text = f'{text}{onSendServer()}\n'
+    if Settings.send_user is True:
+        text = f'{text}{onSendUser()}\n'
+    if Settings.send_server is False and Settings.send_user is False:
+        print(3)
+        return False, ''
+    else:
         return True, text

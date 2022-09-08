@@ -53,7 +53,7 @@ def getNewOrder():
         return result
 
 
-def getServerStat(timestemp):
+def getServerToday(timestemp):
     db.ping(reconnect=True)
     with db.cursor() as cursor:
         cursor.execute(
@@ -69,6 +69,15 @@ def getServerName(server_type, server_id):
         cursor.execute(
             f"SELECT * FROM {server} WHERE id = {server_id}")
         result = cursor.fetchone()
+        return result
+
+
+def getUserToday(timestemp):
+    db.ping(reconnect=True)
+    with db.cursor() as cursor:
+        cursor.execute(
+            "SELECT * FROM v2_stat_user WHERE record_at = %s", (timestemp))
+        result = cursor.fetchall()
         return result
 
 
