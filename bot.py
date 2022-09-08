@@ -270,7 +270,6 @@ class Module:
         global current_list
         ticket = Module.getNewTicket()
         order = Module.getNewOrder()
-        print(len(order))
         if current_list['ticket'] != 0 and len(ticket) > current_list['ticket']:
             for i in range(current_list['ticket'], len(ticket)):
                 # id,user_id,subject,level,status,reply_status
@@ -348,7 +347,6 @@ class Module:
                     current_list['order'] = i+1
         else:
             current_list['order'] = len(order)
-        print(current_list)
         timer = threading.Timer(10, Module.autoSend)
         timer.start()
 
@@ -412,7 +410,6 @@ class Module:
             cursor.execute(
                 f"SELECT * FROM v2_stat_user WHERE `user_id` = {uid}")
             result = cursor.fetchall()
-            print(result)
             if len(result) < 1:
                 return False, result
             else:
@@ -497,7 +494,6 @@ def main() -> None:
     }
     commands_list = []
     for i in commands:
-        print(i, commands[i][1])
         dispatcher.add_handler(CommandHandler(
             i, commands[i][0], run_async=True))
         commands_list.append(BotCommand(i, commands[i][1]))
