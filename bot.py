@@ -270,7 +270,7 @@ class Module:
         global current_list
         ticket = Module.getNewTicket()
         order = Module.getNewOrder()
-        print(current_list)
+        print(len(order))
         if current_list['ticket'] != 0 and len(ticket) > current_list['ticket']:
             for i in range(current_list['ticket'], len(ticket)):
                 # id,user_id,subject,level,status,reply_status
@@ -302,50 +302,54 @@ class Module:
                     parse_mode='Markdown',
                     reply_markup=reply_markup
                 )
+        current_list['ticket'] = len(ticket)
         if current_list['order'] != 0 and len(order) > current_list['order']:
             for i in range(current_list['order'], len(order)):
-                Result, User = Module.getUser('id', order[i][2])
-                Email = User['email']
-                Plan = Module.getPlanName(order[i][3])
-                Payment = Module.getPaymentName(order[i][5])
-                Code = {
-                    'Type': ['无', '新购', '续费', '升级'],
-                    'Period': {
-                        'month_price': '月付',
-                        'quarter_price': '季付',
-                        'half_year_price': '半年付',
-                        'year_price': '年付',
-                        'two_year_price': '两年付',
-                        'three_year_price': '三年付',
-                        'onetime_price': '一次性',
-                        'reset_price': '重置包',
+                Total_amount = order[i][10]
+                Status = order[i][17]
+                if Total_amount > 0 and Status == 3 and order[i][5] is not None:
+                    Result, User = Module.getUser('id', order[i][2])
+                    Email = User['email']
+                    Plan = Module.getPlanName(order[i][3])
+                    Payment = Module.getPaymentName(order[i][5])
+                    Code = {
+                        'Type': ['无', '新购', '续费', '升级'],
+                        'Period': {
+                            'month_price': '月付',
+                            'quarter_price': '季付',
+                            'half_year_price': '半年付',
+                            'year_price': '年付',
+                            'two_year_price': '两年付',
+                            'three_year_price': '三年付',
+                            'onetime_price': '一次性',
+                            'reset_price': '重置包',
+                        }
                     }
-                }
-                Type = Code['Type'][order[i][6]]
-                Period = Code['Period'][order[i][7]]
-                Amount = round(order[i][10] / 100, 2)
-                Paid_Time = time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime(order[i][21]))
+                    Type = Code['Type'][order[i][6]]
+                    Period = Code['Period'][order[i][7]]
+                    Amount = round(Total_amount / 100, 2)
+                    Paid_Time = time.strftime(
+                        "%Y-%m-%d %H:%M:%S", time.localtime(order[i][21]))
 
-                text = '📠*新的订单*\n\n'
-                text = f'{text}👤*用户*：`{Email}`\n'
-                text = f'{text}🛍*套餐*：{Plan}\n'
-                text = f'{text}💵*支付*：{Payment}\n'
-                text = f'{text}📥*类型*：{Type}\n'
-                text = f'{text}📅*时长*：{Period}\n'
-                text = f'{text}🏷*价格*：{Amount}\n'
-                text = f'{text}🕰*支付时间*：{Paid_Time}\n'
+                    text = '📠*新的订单*\n\n'
+                    text = f'{text}👤*用户*：`{Email}`\n'
+                    text = f'{text}🛍*套餐*：{Plan}\n'
+                    text = f'{text}💵*支付*：{Payment}\n'
+                    text = f'{text}📥*类型*：{Type}\n'
+                    text = f'{text}📅*时长*：{Period}\n'
+                    text = f'{text}🏷*价格*：{Amount}\n'
+                    text = f'{text}🕰*支付时间*：{Paid_Time}\n'
 
-                bot.send_message(
-                    chat_id=Config.tg_admin,
-                    text=text,
-                    parse_mode='Markdown'
-                )
-        current_list = {
-            'ticket': len(ticket),
-            'order': len(order)
-        }
-        timer = threading.Timer(60, Module.autoSend)
+                    bot.send_message(
+                        chat_id=Config.tg_admin,
+                        text=text,
+                        parse_mode='Markdown'
+                    )
+                    current_list['order'] = i+1
+        else:
+            current_list['order'] = len(order)
+        print(current_list)
+        timer = threading.Timer(10, Module.autoSend)
         timer.start()
 
     def getNewTicket():
@@ -360,7 +364,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM v2_order WHERE `total_amount` > '0' AND `status` = '3'")
+                "SELECT * FROM v2_order")
             result = cursor.fetchall()
             return result
 
@@ -420,7 +424,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT telegram_id FROM v2_user WHERE email = %s", (email))
+                f"SELECT telegram_id FROM v2_user WHERE email = {email}")
             result = cursor.fetchone()
             if result[0] is None:
                 return False, 0
@@ -433,7 +437,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT name FROM v2_plan WHERE id = %s", (planid))
+                f"SELECT name FROM v2_plan WHERE id = {planid}")
             result = cursor.fetchone()
             return result[0]
 
@@ -443,7 +447,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT code,status,pv FROM v2_invite_code WHERE user_id = %s", (uid))
+                f"SELECT code,status,pv FROM v2_invite_code WHERE user_id = {uid}")
             result = cursor.fetchone()
             return result
 
@@ -460,7 +464,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT * FROM v2_user WHERE invite_user_id =  %s", (uid))
+                f"SELECT * FROM v2_user WHERE invite_user_id = {uid}")
             result = cursor.fetchall()
             return len(result)
 
@@ -468,7 +472,7 @@ class Module:
         db.ping(reconnect=True)
         with db.cursor() as cursor:
             cursor.execute(
-                "SELECT name FROM v2_payment WHERE id =  %s", (id))
+                f"SELECT name FROM v2_payment WHERE id = {id}")
             result = cursor.fetchone()
             return result[0]
 
@@ -493,9 +497,10 @@ def main() -> None:
     }
     commands_list = []
     for i in commands:
-        print(i,commands[i][1])
-        dispatcher.add_handler(CommandHandler(i, commands[i][0], run_async=True))
-        commands_list.append(BotCommand(i,commands[i][1]))
+        print(i, commands[i][1])
+        dispatcher.add_handler(CommandHandler(
+            i, commands[i][0], run_async=True))
+        commands_list.append(BotCommand(i, commands[i][1]))
 
     bot.setMyCommands(commands_list)
 
