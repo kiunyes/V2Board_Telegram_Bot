@@ -92,6 +92,8 @@ def onSendServer():
             result_list.append(i)
         result_list.sort(key=lambda x: x[4], reverse=True)
         index = 5
+        if len(result_list) < index:
+            index = len(result_list)
         text = f'使用的前 {index} 的节点（不算倍率）：\n\n'
         for i in range(index):
             server = Handler.getServerName(
@@ -116,6 +118,8 @@ def onSendUser():
         result_list = sorted(result_dict.items(),
                              key=lambda x: x[1], reverse=True)
         index = 5
+        if len(result_list) < index:
+            index = len(result_list)
         text = f'流量使用前 {index} 名用户（已算倍率）：\n\n'
         for i in range(index):
             res, user = Handler.getUser('id', result_list[i][0])
