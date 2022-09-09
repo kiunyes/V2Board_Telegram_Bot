@@ -10,11 +10,13 @@ import Config
 
 tz = pytz.timezone('Asia/Shanghai')
 
-#每日推送开关
+# 每日推送开关
+
+
 class Settings:
-    #服务器统计
+    # 服务器统计
     send_server = True
-    #用户统计
+    # 用户统计
     send_user = True
 
 
@@ -76,6 +78,8 @@ def onOrder(email, order, i):
     text = f'{text}🏷*价格*：{Amount}\n'
     text = f'{text}🕰*支付时间*：{Paid_Time}\n'
 
+    return text
+
 
 def getTodayTimestemp():
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
@@ -124,7 +128,8 @@ def onSendUser():
         for i in range(index):
             res, user = Handler.getUser('id', result_list[i][0])
             uid = user['uid']
-            email = re.sub(r'\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}', '***@***.com', user['email'])
+            email = re.sub(
+                r'\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}', '***@***.com', user['email'])
             download = round(result_list[i][1] / 1024 / 1024 / 1024, 2)
             text = f'{text}`{email}` - #`{uid}` - `{download}` GB\n'
         return text

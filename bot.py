@@ -323,7 +323,8 @@ class Module:
             if curday > sysday:
                 task_autoSend = False
                 sysday = curday
-        timer = threading.Timer(60, Module.autoSend)
+        print(current_list)
+        timer = threading.Timer(15, Module.autoSend)
         timer.start()
 
 
