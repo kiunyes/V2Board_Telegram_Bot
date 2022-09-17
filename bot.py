@@ -1,4 +1,5 @@
 import logging
+import yaml
 
 from telegram import __version__ as TG_VER
 
@@ -14,18 +15,22 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
     )
 from telegram.ext import Application, CommandHandler
 
-import config
 import commands
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-logger = logging.getLogger(__name__)
 
-app = Application.builder().token(config.bot_token).build()
+def onLog():
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.getLogger(__name__)
 
 
-def main():
+def onRunning():
+    with open('config.yaml') as f:
+        config = yaml.safe_load(f)
+    #proxy = 'http://127.0.0.1:7890'
+    token = config['bot']['token']
+    app = Application.builder().token(token).build()
+    #app = Application.builder().token(token).proxy_url(proxy).get_updates_proxy_url(proxy).build()
     for i in commands.cmd:
         model = getattr(commands, i)
         app.add_handler(CommandHandler(i, model.exec))
@@ -34,4 +39,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    onLog()
+    onRunning()

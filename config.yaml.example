@@ -1,0 +1,18 @@
+bot:
+  token: 1234:1234567890abcdef
+  admin_id: 0
+  group_id: 0
+v2board:
+  website: https://awesomeV2Board.com
+  database:
+    ip: 127.0.0.1
+    port: 3306
+    user: root
+    pass: password
+    name: database
+  ssh:
+    enable: true
+    ip: 127.0.0.1
+    port: 22
+    user: root
+    pass: password
