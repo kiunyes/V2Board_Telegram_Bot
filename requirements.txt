@@ -1,1 +1,7 @@
+DBUtils==3.0.2
+pandas==1.4.2
+PyMySQL==1.0.2
 python_telegram_bot==20.0a4
+PyYAML==6.0
+requests==2.27.1
+sshtunnel==0.4.0

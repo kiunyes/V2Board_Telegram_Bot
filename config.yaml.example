@@ -1,9 +1,9 @@
 bot:
+  website: https://awesomeV2Board.com
   token: 1234:1234567890abcdef
   admin_id: 0
   group_id: 0
 v2board:
-  website: https://awesomeV2Board.com
   database:
     ip: 127.0.0.1
     port: 3306
