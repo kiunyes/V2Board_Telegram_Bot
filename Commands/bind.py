@@ -26,11 +26,10 @@ async def exec(update, context) -> None:
     tid = msg.from_user.id
     gid = msg.chat.id
     chat_type = msg.chat.type
-    db = MysqlUtils()
     try:
+        db = MysqlUtils()
+        user = db.sql_query('SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
         if chat_type == 'private':
-            user = db.sql_query(
-                'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
             if len(user) == 0:
                 if len(context.args) == 2:
                     email = context.args[0]
@@ -52,8 +51,6 @@ async def exec(update, context) -> None:
                 await msg.reply_markdown('❌*错误*\n你已经绑定过账号了！')
         else:
             if gid == config['tg_group']:
-                user = db.sql_query(
-                    'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
                 if len(user) > 0:
                     callback = await msg.reply_markdown('❌*错误*\n你已经绑定过账号了！')
                 else:

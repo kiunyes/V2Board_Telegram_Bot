@@ -29,9 +29,9 @@ async def exec(update, context) -> None:
 
     try:
         db = MysqlUtils()
+        user = db.sql_query(
+            'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
         if chat_type == 'private':
-            user = db.sql_query(
-                'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
             if len(user) == 0:
                 await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
             else:
@@ -53,13 +53,12 @@ async def exec(update, context) -> None:
                     await msg.reply_markdown('❌*错误*\n正确的格式为：/unbind 邮箱 密码')
         else:
             if gid == config['tg_group']:
-                user=db.sql_query(
-                    'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
                 if len(user) > 0:
-                    callback=await msg.reply_markdown('❌*错误*\n为了你的账号安全，请私聊我！')
+                    callback = await msg.reply_markdown('❌*错误*\n为了你的账号安全，请私聊我！')
                 else:
-                    callback=await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
+                    callback = await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
                 await asyncio.sleep(15)
                 await context.bot.deleteMessage(message_id=callback.message_id, chat_id=msg.chat_id)
     finally:
+        db.conn.commit()
         db.close()
