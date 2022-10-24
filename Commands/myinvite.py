@@ -3,7 +3,6 @@ import bot
 import time
 import pytz
 import datetime
-from commands.buyplan import getContent
 from handler import MysqlUtils
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 

@@ -5,6 +5,9 @@ from dbutils.pooled_db import PooledDB
 import bot
 db_cfg = bot.config['v2board']['database']
 
+debug = False
+
+
 class MysqlUtils(object):
     def __init__(self, ip: str = None, port: int = None, db=None, user=None, password=None):
         """
@@ -30,11 +33,13 @@ class MysqlUtils(object):
                                  password=self.__password, db=self.__mysql_db).connection()
             if self.conn:
                 self.cur = self.conn.cursor()
-                print("Database: {} is connected successfully!".format(
-                    self.__mysql_db))
+                if debug is True:
+                    print("Database: {} is connected successfully!".format(
+                        self.__mysql_db))
             else:
-                print("Database: {} is not connected, please try it again!".format(
-                    self.__mysql_db))
+                if debug is True:
+                    print("Database: {} is not connected, please try it again!".format(
+                        self.__mysql_db))
         except Exception as e:
             print('Connection Error: ', e)
 
@@ -50,9 +55,11 @@ class MysqlUtils(object):
         """
         if self.conn:
             self.conn.close()
-            print('Connection has been closed!')
+            if debug is True:
+                print('Connection has been closed!')
         else:
-            print('Error: can not close the connection which is None Type !')
+            if debug is True:
+                print('Error: can not close the connection which is None Type !')
 
     def execute_sql(self, sql=' '):
         """
@@ -66,7 +73,8 @@ class MysqlUtils(object):
             self.conn.rollback()
             error = 'MySQL execute failed! ERROR (%s): %s' % (
                 e.args[0], e.args[1])
-            print(error)
+            if debug is True:
+                print(error)
             return error
 
     def is_exist_table(self, table_name):
@@ -93,8 +101,9 @@ class MysqlUtils(object):
         Returns:
         """
         if self.is_exist_table(tablename):
-            print('Error: can not create {} which exists in {}! '.format(
-                tablename, self.__mysql_db))
+            if debug is True:
+                print('Error: can not create {} which exists in {}! '.format(
+                    tablename, self.__mysql_db))
             return
         sql = ''
         sql_mid = '`id` bigint(11) NOT NULL AUTO_INCREMENT,'
@@ -105,7 +114,8 @@ class MysqlUtils(object):
         sql = sql + constraint
         sql = sql + ') ENGINE=InnoDB DEFAULT CHARSET=utf8'
         # ENGINE=InnoDB/MyISAM, InnoDB is recommended.
-        print('creatTable:' + sql)
+        if debug is True:
+            print('creatTable:' + sql)
         self.execute_sql(sql)
 
     @property
@@ -142,7 +152,8 @@ class MysqlUtils(object):
         values_sql = ' values(' + ','.join(value) + ')'
         sql = 'insert into %s' % table_name
         sql = sql + attrs_sql + values_sql
-        print('Insert One:' + sql)
+        if debug is True:
+            print('Insert One:' + sql)
         self.execute_sql(sql)
 
     def update_one(self, table_name: str, params: dict, conditions: dict):
@@ -154,7 +165,8 @@ class MysqlUtils(object):
         """
         update_sql = [k + '=' + "\'" +
                       str(v) + "\'" for k, v in params.items()]
-        print(update_sql)
+        if debug is True:
+            print(update_sql)
         if conditions:
             conditions_sql = [k + '=' + "\'" +
                               str(v) + "\'" for k, v in conditions.items()]
@@ -162,7 +174,8 @@ class MysqlUtils(object):
                 ','.join(update_sql) + ' where ' + ','.join(conditions_sql)
         else:
             sql = 'update ' + table_name + ' set ' + ','.join(update_sql)
-        print('Update One:', sql)
+        if debug is True:
+            print('Update One:', sql)
         self.execute_sql(sql)
 
     def insert_many(self, table: str, attrs: list, values: list):
@@ -176,7 +189,8 @@ class MysqlUtils(object):
         values_sql = ' values(' + ','.join(values_sql) + ')'
         sql = 'insert into %s' % table
         sql = sql + attrs_sql + values_sql
-        print('insertMany:' + sql)
+        if debug is True:
+            print('insertMany:' + sql)
         try:
             for i in range(0, len(values), 20000):
                 self.cur.executemany(sql, values[i:i + 20000])
@@ -185,7 +199,8 @@ class MysqlUtils(object):
             self.conn.rollback()
             error = 'insertMany executemany failed! ERROR (%s): %s' % (
                 e.args[0], e.args[1])
-            print(error)
+            if debug is True:
+                print(error)
 
     def count_sql_query(self, sql_table, sql_condition=''):
         """
@@ -194,7 +209,8 @@ class MysqlUtils(object):
         :param sql_condition: condition limit
         """
         sql = "SELECT count(*) FROM " + sql_table + ' ' + sql_condition
-        print(sql)
+        if debug is True:
+            print(sql)
         self.cur.execute(sql)
         return list(self.cur.fetchall())[0][0]
 
@@ -205,7 +221,8 @@ class MysqlUtils(object):
         :param df_header: dataframe的columns的名字列表
         :returns: sql查询结果
         """
-        print(sql)
+        if debug is True:
+            print(sql)
         self.cur.execute(sql)
         if not df_header:
             return self.cur.fetchall()
@@ -219,7 +236,8 @@ class MysqlUtils(object):
         清空当前表
         """
         sql = "TRUNCATE table " + sql_table
-        print(sql)
+        if debug is True:
+            print(sql)
         self.cur.execute(sql)
         self.conn.commit()
 
@@ -230,7 +248,8 @@ class MysqlUtils(object):
         :param conditions: 筛选条件
         """
         sql = "DELETE FROM " + table + ' ' + conditions
-        print("sql=", sql)
+        if debug is True:
+            print("sql=", sql)
         self.cur.execute(sql)
         self.conn.commit()
 
@@ -240,6 +259,7 @@ class MysqlUtils(object):
         """
         if flag:
             sql = "DROP TABLE " + table
-            print("Warning: " + sql)
+            if debug is True:
+                print("Warning: " + sql)
             self.cur.execute(sql)
             self.conn.commit()
