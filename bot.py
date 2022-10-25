@@ -20,6 +20,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logging.getLogger(__name__)
 
+VERSION = "2.0"
 
 try:
     f = open('config.yaml', 'r')
@@ -31,6 +32,7 @@ except FileNotFoundError as error:
 try:
     ssh_cfg = config['v2board']['ssh']
     db_cfg = config['v2board']['database']
+    port = db_cfg['port']
     if ssh_cfg['enable'] is True:
         ssh = SSHTunnelForwarder(
             ssh_address_or_host=(ssh_cfg['ip'], ssh_cfg['port']),
@@ -39,13 +41,12 @@ try:
             remote_bind_address=(db_cfg['ip'], db_cfg['port']))
         ssh.start()
         port = ssh.local_bind_port
-    port = port or config['v2board']['database']['port']
 except Exception as error:
     print(error)
     sys.exit(0)
 
 try:
-    #proxy = 'http://127.0.0.1:7890'
+    # proxy = 'http://127.0.0.1:7890'
     token = config['bot']['token']
     app = Application.builder().token(token).build()
     # app = Application.builder().token(token).proxy_url(
