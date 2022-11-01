@@ -35,7 +35,7 @@ async def exec(update, context) -> None:
             else:
                 await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
         else:
-            if gid == config['tg_group']:
+            if gid == config['group_id']:
                 if len(user) > 0:
                     callback = await msg.reply_markdown('❌*错误*\n为了你的账号安全，请私聊我！')
                 else:

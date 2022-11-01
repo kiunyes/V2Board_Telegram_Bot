@@ -57,7 +57,7 @@ async def exec(update, context) -> None:
         db = MysqlUtils()
         user = db.sql_query(
             'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
-        if chat_type == 'private' or gid == config['tg_group']:
+        if chat_type == 'private' or gid == config['group_id']:
             if len(user) > 0:
                 if user[0][23] is not None:
                     text = getContent(user[0])

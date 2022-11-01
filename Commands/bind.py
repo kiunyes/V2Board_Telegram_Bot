@@ -50,7 +50,7 @@ async def exec(update, context) -> None:
             else:
                 await msg.reply_markdown('❌*错误*\n你已经绑定过账号了！')
         else:
-            if gid == config['tg_group']:
+            if gid == config['group_id']:
                 if len(user) > 0:
                     callback = await msg.reply_markdown('❌*错误*\n你已经绑定过账号了！')
                 else:

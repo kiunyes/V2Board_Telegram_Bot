@@ -46,7 +46,7 @@ async def exec(update, context) -> None:
         db = MysqlUtils()
         user = db.sql_query(
             'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
-        if chat_type == 'private' or gid == config['tg_group']:
+        if chat_type == 'private' or gid == config['group_id']:
             if len(user) > 0:
                 text = getContent(user[0][0])
                 callback = await msg.reply_markdown(text)

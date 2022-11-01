@@ -19,7 +19,7 @@ async def exec(update, context) -> None:
     tid = msg.from_user.id
     gid = msg.chat.id
     chat_type = msg.chat.type
-    if chat_type == 'private' or gid == config['tg_group']:
+    if chat_type == 'private' or gid == config['group_id']:
         text, reply_markup = getContent()
         callback = await msg.reply_markdown(text, reply_markup=reply_markup)
         if chat_type != 'private':
