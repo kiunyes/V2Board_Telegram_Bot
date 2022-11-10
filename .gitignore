@@ -1,6 +1,9 @@
 # Config
 config.yaml
 
+# Temp
+Temp/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,7 +1,9 @@
 import bot
 import pytz
+import os
 import datetime
 import time
+import yaml
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
 
@@ -81,6 +83,7 @@ def onSendUser():
                 result_dict[str(i[1])] += i[4]
         result_list = sorted(result_dict.items(),
                              key=lambda x: x[1], reverse=True)
+        index = Settings.index
         if len(result_list) < index:
             index = len(result_list)
         text = f'流量使用前 {index} 名用户：\n\n'
@@ -107,9 +110,21 @@ def onTodayData():
 
 
 async def exec(context: ContextTypes.DEFAULT_TYPE):
-    global already_sent
-    global sysday
-    if already_sent is False:
+    curpath = os.path.dirname(os.path.realpath(__file__))
+    yamlpath = os.path.join(curpath, "../Temp/%s.yaml" % __name__)
+    origin = {
+        'sysday': datetime.datetime.now(timezone).strftime("%Y-%m-%d"),
+        'already_sent': True
+    }
+    try:
+        with open(yamlpath) as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError as error:
+        with open(yamlpath, "w", encoding="utf-8") as f:
+            yaml.dump(origin,f)
+            config = origin
+
+    if config['already_sent'] is False:
         result, text = onTodayData()
         if result is True:
             await context.bot.send_message(
@@ -117,9 +132,13 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
                 text=text,
                 parse_mode='Markdown'
             )
-        already_sent = True
+        config['already_sent'] = True
+        with open(yamlpath, 'w') as f:
+            yaml.safe_dump(config, f, default_flow_style=False)
     else:
         curday = datetime.datetime.now(timezone).strftime("%Y-%m-%d")
-        if curday > sysday:
-            already_sent = True
-            sysday = curday
+        if curday > config['sysday']:
+            config['already_sent'] = False
+            config['sysday'] = curday
+            with open(yamlpath, 'w') as f:
+                yaml.safe_dump(config, f, default_flow_style=False)

@@ -1,7 +1,7 @@
-import asyncio
 import bot
 from handler import MysqlUtils
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import ContextTypes
 
 desc = '获取我的订阅链接'
 config = bot.config['bot']
@@ -19,28 +19,28 @@ def getContent(token):
     return text, reply_markup
 
 
-async def exec(update, context) -> None:
-    msg = update.message
-    tid = msg.from_user.id
-    gid = msg.chat.id
+async def autoDelete(context: ContextTypes.DEFAULT_TYPE) -> None:
+    job = context.job
+    await context.bot.delete_message(job.chat_id, job.data)
+
+
+async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    msg = update.effective_message
+    user_id = msg.from_user.id
+    chat_id = msg.chat_id
     chat_type = msg.chat.type
-    try:
+    if chat_type == 'private':
         db = MysqlUtils()
         user = db.sql_query(
-            'SELECT * FROM v2_user WHERE `telegram_id` = %s' % tid)
-        if chat_type == 'private':
-            if len(user) > 0:
-                text, reply_markup = getContent(user[0][26])
-                await msg.reply_markdown(text, reply_markup=reply_markup)
-            else:
-                await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
-        else:
-            if gid == config['group_id']:
-                if len(user) > 0:
-                    callback = await msg.reply_markdown('❌*错误*\n为了你的账号安全，请私聊我！')
-                else:
-                    callback = await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
-                await asyncio.sleep(15)
-                await context.bot.deleteMessage(message_id=callback.message_id, chat_id=msg.chat_id)
-    finally:
+            'SELECT * FROM v2_user WHERE `telegram_id` = %s' % user_id)
         db.close()
+        if len(user) > 0:
+            text, reply_markup = getContent(user[0][26])
+            await msg.reply_markdown(text, reply_markup=reply_markup)
+        else:
+            await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
+    else:
+        if chat_id == config['group_id']:
+            callback = await msg.reply_markdown('❌*错误*\n为了你的账号安全，请私聊我！')
+            context.job_queue.run_once(
+                autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

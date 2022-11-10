@@ -1,6 +1,6 @@
-import asyncio
 import bot
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import ContextTypes
 
 desc = '打开网站链接'
 config = bot.config['bot']
@@ -14,14 +14,18 @@ def getContent():
     return text, reply_markup
 
 
-async def exec(update, context) -> None:
-    msg = update.message
-    tid = msg.from_user.id
-    gid = msg.chat.id
-    chat_type = msg.chat.type
-    if chat_type == 'private' or gid == config['group_id']:
+async def autoDelete(context: ContextTypes.DEFAULT_TYPE) -> None:
+    job = context.job
+    await context.bot.delete_message(job.chat_id, job.data)
+
+
+async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    msg = update.effective_message
+    chat_id = msg.chat_id
+    chat_type = update.effective_chat.type
+    if chat_type == 'private' or chat_id == config['group_id']:
         text, reply_markup = getContent()
         callback = await msg.reply_markdown(text, reply_markup=reply_markup)
         if chat_type != 'private':
-            await asyncio.sleep(15)
-            await context.bot.deleteMessage(message_id=callback.message_id, chat_id=msg.chat_id)
+            context.job_queue.run_once(
+                autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

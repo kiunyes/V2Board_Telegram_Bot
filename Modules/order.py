@@ -59,7 +59,7 @@ def onOrderData(current_order):
     if current_order[5] is not None:
         getPaygate = onQuery(
             'SELECT * FROM v2_payment WHERE `id` = %s' % current_order[5])
-        Payment = getPaygate[0][5]
+        Payment = getPaygate[0][3]
 
     Type = mapping['Type'][current_order[6]]
     Period = mapping['Period'][current_order[7]]
