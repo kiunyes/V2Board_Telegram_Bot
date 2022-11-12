@@ -4,6 +4,7 @@ import sys
 from sshtunnel import SSHTunnelForwarder
 
 from telegram import __version__ as TG_VER
+from telegram import BotCommand
 
 try:
     from telegram import __version_info__
@@ -14,7 +15,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"This bot is not compatible with your current PTB version {TG_VER}. To upgrade use this command:"
         f"pip3 install python-telegram-bot --upgrade --pre"
     )
-from telegram.ext import Application, CommandHandler
+from telegram.ext import Application, CommandHandler,ContextTypes
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -46,20 +47,29 @@ except Exception as error:
     sys.exit(0)
 
 try:
-    #proxy = 'http://127.0.0.1:7890'
+    proxy = 'http://127.0.0.1:7890'
     token = config['bot']['token']
-    app = Application.builder().token(token).build()
-    #app = Application.builder().token(token).proxy_url(proxy).get_updates_proxy_url(proxy).build()
+    #app = Application.builder().token(token).build()
+    app = Application.builder().token(token).proxy_url(proxy).get_updates_proxy_url(proxy).build()
 except Exception as error:
     print(error)
     sys.exit(0)
 
 
+async def onCommandSet(context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.delete_my_commands()
+    await context.bot.set_my_commands(context.job.data)
+
+
+
 def main():
     try:
         import Commands
+        command_list = []
         for i in Commands.content:
             app.add_handler(CommandHandler(i, getattr(Commands, i).exec))
+            command_list.append(BotCommand(i,getattr(Commands, i).desc))
+        app.job_queue.run_once(onCommandSet,1,command_list,'onCommandSet')
         import Modules
         for i in Modules.content:
             app.job_queue.run_repeating(

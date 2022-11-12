@@ -129,11 +129,10 @@ def onTodayData():
 
 def onTodayOrderData():
     content = onSendOrder()
-    if Settings.send_order is True:
-        text = f'📊*昨日统计：*\n\n{content}\n'
     if Settings.send_order is False or len(content) == 0:
         return False, ''
-    else:
+    elif Settings.send_order is True:
+        text = f'📊*昨日统计：*\n\n{content}\n'
         return True, text
 
 

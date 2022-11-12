@@ -1,6 +1,4 @@
 import bot
-import pytz
-import datetime
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -8,7 +6,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 desc = '推送新工单'
 
 
-timezone = pytz.timezone('Asia/Shanghai')
 cfg = bot.config['bot']
 ticket_total = 0
 ticket_status = []

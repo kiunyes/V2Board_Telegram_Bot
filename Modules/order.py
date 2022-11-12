@@ -1,6 +1,6 @@
 import bot
 import pytz
-import datetime
+from datetime import datetime
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
 
@@ -64,7 +64,7 @@ def onOrderData(current_order):
     Type = mapping['Type'][current_order[6]]
     Period = mapping['Period'][current_order[7]]
     Amount = round(current_order[10] / 100, 2)
-    Paid_Time = datetime.datetime.fromtimestamp(
+    Paid_Time = datetime.fromtimestamp(
         (current_order[21]), timezone).strftime("%Y-%m-%d %H:%M:%S")
 
     text = '📠*新的订单*\n\n'
