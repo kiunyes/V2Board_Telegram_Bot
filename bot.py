@@ -47,10 +47,10 @@ except Exception as error:
     sys.exit(0)
 
 try:
-    proxy = 'http://127.0.0.1:7890'
+    #proxy = 'http://127.0.0.1:7890'
     token = config['bot']['token']
-    #app = Application.builder().token(token).build()
-    app = Application.builder().token(token).proxy_url(proxy).get_updates_proxy_url(proxy).build()
+    app = Application.builder().token(token).build()
+    #app = Application.builder().token(token).proxy_url(proxy).get_updates_proxy_url(proxy).build()
 except Exception as error:
     print(error)
     sys.exit(0)
