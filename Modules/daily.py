@@ -19,6 +19,8 @@ class Settings:
     send_user = True
     # 统计多少个
     index = 5
+    # 订单统计（仅推送admin）
+    send_order = True
 
 
 cfg = bot.config['bot']
@@ -45,7 +47,7 @@ def onSendServer():
     result = onQuery(
         "SELECT * FROM v2_stat_server WHERE record_at = %s" % getTimestemp())
     result_list = []
-    if result is not None:
+    if result is not None and len(result) > 0:
         for i in result:
             result_list.append(i)
         result_list.sort(key=lambda x: x[4], reverse=True)
@@ -73,7 +75,7 @@ def onSendUser():
     result = onQuery(
         "SELECT * FROM v2_stat_user WHERE record_at = %s" % getTimestemp())
     result_dict = {}
-    if result is not None:
+    if result is not None and len(result) > 0:
         for i in result:
             if str(i[1]) not in result_dict:
                 result_dict[str(i[1])] = i[4]
@@ -95,6 +97,24 @@ def onSendUser():
         return ''
 
 
+def onSendOrder():
+    result = onQuery(
+        "SELECT * FROM v2_stat_order WHERE record_at = %s" % getTimestemp())
+    if result is not None and len(result) > 0:
+        order_count = result[0][1]
+        order_amount = round(result[0][2] / 100, 2)
+        commission_count = result[0][3]
+        commission_amount = round(result[0][4] / 100, 2)
+        text = ''
+        text = f'{text}📑*订单总数*：{order_count} 单\n'
+        text = f'{text}💰*订单金额*：{order_amount} 元\n'
+        text = f'{text}💸*返现次数*：{commission_count} 单\n'
+        text = f'{text}💵*返现金额*：{commission_amount} 元\n'
+        return text
+    else:
+        return ''
+
+
 def onTodayData():
     text = '📊*昨日统计：*\n\n'
     if Settings.send_server is True:
@@ -102,6 +122,16 @@ def onTodayData():
     if Settings.send_user is True:
         text = f'{text}{onSendUser()}\n'
     if Settings.send_server is False and Settings.send_user is False:
+        return False, ''
+    else:
+        return True, text
+
+
+def onTodayOrderData():
+    content = onSendOrder()
+    if Settings.send_order is True:
+        text = f'📊*昨日统计：*\n\n{content}\n'
+    if Settings.send_order is False or len(content) == 0:
         return False, ''
     else:
         return True, text
@@ -127,6 +157,13 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
         if result is True:
             await context.bot.send_message(
                 chat_id=cfg['group_id'],
+                text=text,
+                parse_mode='Markdown'
+            )
+        result, text = onTodayOrderData()
+        if result is True:
+            await context.bot.send_message(
+                chat_id=cfg['admin_id'],
                 text=text,
                 parse_mode='Markdown'
             )

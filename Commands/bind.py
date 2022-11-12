@@ -15,7 +15,6 @@ def onLogin(email, password):
     }
     x = requests.post(
         '%s/api/v1/passport/auth/login' % config['website'], login)
-    print(x)
     if x.status_code == 200:
         return True
     else:

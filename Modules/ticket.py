@@ -54,7 +54,7 @@ def onTicketData(current_ticket):
     text = f'{text}👤*用户*：`{User}`\n'
     text = f'{text}📩*主题*：{Subject}\n'
     text = f'{text}🔔*级别*：{Level}\n'
-    text = f'{text}📩*内容*：{current_ticket[3]}\n'
+    text = f'{text}🧾*内容*：{current_ticket[3]}\n'
     keyboard = [[InlineKeyboardButton(
         text='回复工单', url=f"{cfg['website']}/admin#/ticket/{current_ticket[2]}")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
