@@ -2,12 +2,14 @@ import bot
 import pytz
 import os
 import datetime
-import time
+import calendar
 import yaml
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
 
 desc = '定时推送用量'
+
+timezone = pytz.timezone('Asia/Shanghai')
 
 
 class Settings:
@@ -20,10 +22,6 @@ class Settings:
 
 
 cfg = bot.config['bot']
-
-timezone = pytz.timezone('Asia/Shanghai')
-sysday = datetime.datetime.now(timezone).strftime("%Y-%m-%d")
-already_sent = True
 
 
 def onQuery(sql):
@@ -38,8 +36,8 @@ def onQuery(sql):
 def getTimestemp():
     yesterday = (datetime.datetime.now(timezone) -
                  datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    timestemp = int(time.mktime(
-        time.strptime(str(yesterday), '%Y-%m-%d')))
+    inconvert = datetime.datetime.strptime(yesterday, "%Y-%m-%d")
+    timestemp = int(calendar.timegm(inconvert.timetuple())-28800)
     return timestemp
 
 
@@ -121,7 +119,7 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
             config = yaml.safe_load(f)
     except FileNotFoundError as error:
         with open(yamlpath, "w", encoding="utf-8") as f:
-            yaml.dump(origin,f)
+            yaml.dump(origin, f)
             config = origin
 
     if config['already_sent'] is False:

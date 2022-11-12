@@ -9,9 +9,6 @@ from telegram.ext import ContextTypes
 desc = '获取我的使用信息'
 config = bot.config['bot']
 
-# TineZone
-tz = pytz.timezone('Asia/Shanghai')
-
 
 def onQuery(uid):
     try:
@@ -24,12 +21,13 @@ def onQuery(uid):
 
 
 def getContent(uid):
+    tz = pytz.timezone('Asia/Shanghai')
     current_date = datetime.datetime.now(tz).strftime("%Y-%m-%d")
     stat = onQuery(uid)
     today_usage = 0
     for i in stat:
         today_date = i[6]
-        ltime = time.localtime(today_date)
+        ltime = time.gmtime(today_date + 28800)
         today_date = time.strftime("%Y-%m-%d", ltime)
         if today_date == current_date:
             today_usage = today_usage + i[4]
