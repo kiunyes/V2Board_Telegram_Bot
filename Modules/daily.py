@@ -7,9 +7,14 @@ import yaml
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
 
-desc = '定时推送用量'
 
 timezone = pytz.timezone('Asia/Shanghai')
+
+
+class Conf:
+    desc = '定时推送用量'
+    method = 'daily'
+    runtime = '00:00:00+08:00'
 
 
 class Settings:
@@ -137,42 +142,17 @@ def onTodayOrderData():
 
 
 async def exec(context: ContextTypes.DEFAULT_TYPE):
-    curpath = os.path.dirname(os.path.realpath(__file__))
-    yamlpath = os.path.join(curpath, "../Temp/%s.yaml" % __name__)
-    origin = {
-        'sysday': datetime.datetime.now(timezone).strftime("%Y-%m-%d"),
-        'already_sent': True
-    }
-    try:
-        with open(yamlpath) as f:
-            config = yaml.safe_load(f)
-    except FileNotFoundError as error:
-        with open(yamlpath, "w", encoding="utf-8") as f:
-            yaml.dump(origin, f)
-            config = origin
-
-    if config['already_sent'] is False:
-        result, text = onTodayData()
-        if result is True:
-            await context.bot.send_message(
-                chat_id=cfg['group_id'],
-                text=text,
-                parse_mode='Markdown'
-            )
-        result, text = onTodayOrderData()
-        if result is True:
-            await context.bot.send_message(
-                chat_id=cfg['admin_id'],
-                text=text,
-                parse_mode='Markdown'
-            )
-        config['already_sent'] = True
-        with open(yamlpath, 'w') as f:
-            yaml.safe_dump(config, f, default_flow_style=False)
-    else:
-        curday = datetime.datetime.now(timezone).strftime("%Y-%m-%d")
-        if curday > config['sysday']:
-            config['already_sent'] = False
-            config['sysday'] = curday
-            with open(yamlpath, 'w') as f:
-                yaml.safe_dump(config, f, default_flow_style=False)
+    result, text = onTodayData()
+    if result is True:
+        await context.bot.send_message(
+            chat_id=cfg['group_id'],
+            text=text,
+            parse_mode='Markdown'
+        )
+    result, text = onTodayOrderData()
+    if result is True:
+        await context.bot.send_message(
+            chat_id=cfg['admin_id'],
+            text=text,
+            parse_mode='Markdown'
+        )

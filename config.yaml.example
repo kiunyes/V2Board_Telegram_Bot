@@ -11,7 +11,7 @@ v2board:
     pass: password
     name: database
   ssh:
-    enable: true
+    enable: false
     ip: 127.0.0.1
     port: 22
     user: root

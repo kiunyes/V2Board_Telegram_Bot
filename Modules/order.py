@@ -4,8 +4,11 @@ from datetime import datetime
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
 
-desc = '推送新订单'
 
+class Conf:
+    desc = '推送新订单'
+    method = 'repeating'
+    interval = 60
 
 timezone = pytz.timezone('Asia/Shanghai')
 cfg = bot.config['bot']

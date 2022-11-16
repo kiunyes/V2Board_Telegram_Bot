@@ -3,7 +3,11 @@ from handler import MysqlUtils
 from telegram.ext import ContextTypes
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-desc = '推送新工单'
+
+class Conf:
+    desc = '推送新工单'
+    method = 'repeating'
+    interval = 60
 
 
 cfg = bot.config['bot']

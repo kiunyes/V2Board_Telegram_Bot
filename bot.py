@@ -2,6 +2,7 @@ import logging
 import yaml
 import sys
 from sshtunnel import SSHTunnelForwarder
+from datetime import time
 
 from telegram import __version__ as TG_VER
 from telegram import BotCommand
@@ -15,7 +16,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"This bot is not compatible with your current PTB version {TG_VER}. To upgrade use this command:"
         f"pip3 install python-telegram-bot --upgrade --pre"
     )
-from telegram.ext import Application, CommandHandler,ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -27,7 +28,7 @@ try:
     f = open('config.yaml', 'r')
     config = yaml.safe_load(f)
 except FileNotFoundError as error:
-    print(error)
+    print('没有找到 config.yaml，请复制 config.yaml.example 并重命名为 config.yaml')
     sys.exit(0)
 
 try:
@@ -43,16 +44,14 @@ try:
         ssh.start()
         port = ssh.local_bind_port
 except Exception as error:
-    print(error)
+    print('你已启用 SSH，但是 SSH 的相关配置不正确')
     sys.exit(0)
 
 try:
-    #proxy = 'http://127.0.0.1:7890'
     token = config['bot']['token']
     app = Application.builder().token(token).build()
-    #app = Application.builder().token(token).proxy_url(proxy).get_updates_proxy_url(proxy).build()
 except Exception as error:
-    print(error)
+    print('无法启动 Telegram Bot，请确认 Bot Token 是否正确，或者是否能连接 Telegram 服务器')
     sys.exit(0)
 
 
@@ -61,19 +60,28 @@ async def onCommandSet(context: ContextTypes.DEFAULT_TYPE):
     await context.bot.set_my_commands(context.job.data)
 
 
-
 def main():
     try:
+        # 导入命令文件夹
         import Commands
         command_list = []
         for i in Commands.content:
-            app.add_handler(CommandHandler(i, getattr(Commands, i).exec))
-            command_list.append(BotCommand(i,getattr(Commands, i).desc))
-        app.job_queue.run_once(onCommandSet,1,command_list,'onCommandSet')
+            cmds = getattr(Commands, i)
+            app.add_handler(CommandHandler(i, cmds.exec))
+            command_list.append(BotCommand(i, cmds.desc))
+        app.job_queue.run_once(onCommandSet, 1, command_list, 'onCommandSet')
+        # 导入任务文件夹
         import Modules
         for i in Modules.content:
-            app.job_queue.run_repeating(
-                getattr(Modules, i).exec, interval=60, first=10, name=i)
+            mods = getattr(Modules, i)
+            Conf = mods.Conf
+            if Conf.method == 'daily':
+                app.job_queue.run_daily(
+                    mods.exec, time.fromisoformat(Conf.runtime), name=i)
+            elif Conf.method == 'repeating':
+                app.job_queue.run_repeating(
+                    mods.exec, interval=Conf.interval, name=i)
+        # 启动 Bot
         app.run_polling(drop_pending_updates=True)
     except Exception as error:
         print(error)
