@@ -7,6 +7,7 @@ from telegram.ext import ContextTypes
 desc = '回复某人来获取使用信息'
 config = bot.config['bot']
 
+
 def onQuery(sql):
     try:
         db = MysqlUtils()
@@ -15,12 +16,14 @@ def onQuery(sql):
         db.close()
         return result
 
+
 def getContent(user):
     text = '📋*个人信息*\n'
     User_id = user[0]
     Register_time = time.strftime(
         "%Y-%m-%d %H:%M:%S", time.localtime(user[29]))
-    Plan_id = onQuery('SELECT name FROM v2_plan WHERE id = %s' % user[23])[0][0]
+    Plan_id = onQuery('SELECT name FROM v2_plan WHERE id = %s' %
+                      user[23])[0][0]
     Expire_time = '长期有效'
     if user[27] is not None:
         Expire_time = time.strftime(
@@ -45,6 +48,7 @@ def getContent(user):
     text = f'{text}\n📊*上次使用：* {Data_Time}'
     return text
 
+
 async def autoDelete(context: ContextTypes.DEFAULT_TYPE) -> None:
     job = context.job
     await context.bot.delete_message(job.chat_id, job.data)
@@ -59,7 +63,8 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if user_id == config['admin_id'] and (chat_type == 'private' or chat_id == config['group_id']):
         if msg.reply_to_message:
             reply_id = msg.reply_to_message.from_user.id
-            user = onQuery('SELECT * FROM v2_user WHERE `telegram_id` = %s' % reply_id)
+            user = onQuery(
+                'SELECT * FROM v2_user WHERE `telegram_id` = %s' % reply_id)
             if len(user) > 0:
                 if user[0][23] is not None:
                     text = getContent(user[0])
