@@ -4,9 +4,8 @@ from handler import MysqlUtils
 from telegram import Update
 from telegram.ext import ContextTypes
 
-desc = '获取我的使用信息'
+desc = '回复某人来获取使用信息'
 config = bot.config['bot']
-
 
 def onQuery(sql):
     try:
@@ -15,7 +14,6 @@ def onQuery(sql):
     finally:
         db.close()
         return result
-
 
 def getContent(user):
     text = '📋*个人信息*\n'
@@ -47,7 +45,6 @@ def getContent(user):
     text = f'{text}\n📊*上次使用：* {Data_Time}'
     return text
 
-
 async def autoDelete(context: ContextTypes.DEFAULT_TYPE) -> None:
     job = context.job
     await context.bot.delete_message(job.chat_id, job.data)
@@ -59,17 +56,23 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = msg.chat_id
     chat_type = msg.chat.type
 
-    user = onQuery(
-        'SELECT * FROM v2_user WHERE `telegram_id` = %s' % user_id)
-    if chat_type == 'private' or chat_id == config['group_id']:
-        if len(user) > 0:
-            if user[0][23] is not None:
-                text = getContent(user[0])
-                callback = await msg.reply_markdown(text)
+    if user_id == config['admin_id'] and (chat_type == 'private' or chat_id == config['group_id']):
+        if msg.reply_to_message:
+            reply_id = msg.reply_to_message.from_user.id
+            user = onQuery('SELECT * FROM v2_user WHERE `telegram_id` = %s' % reply_id)
+            if len(user) > 0:
+                if user[0][23] is not None:
+                    text = getContent(user[0])
+                    callback = await msg.reply_markdown(text)
+                else:
+                    callback = await msg.reply_markdown('❌*错误*\n该账号没有购买过订阅！')
             else:
-                callback = await msg.reply_markdown('❌*错误*\n你的账号没有购买过订阅！')
+                callback = await msg.reply_markdown('❌*错误*\n该用户未绑定 Telegram 账号')
         else:
-            callback = await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
-    if chat_type != 'private':
-        context.job_queue.run_once(
-            autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))
+            callback = await msg.reply_markdown('❌*错误*\n你需要回复一条消息来获取信息！')
+        if chat_type != 'private':
+            context.job_queue.run_once(
+                autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))
+
+    else:
+        await msg.reply_markdown('❌*错误*\n你无法使用该指令！')
