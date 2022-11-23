@@ -22,7 +22,8 @@ def getContent(user):
     User_id = user[0]
     Register_time = time.strftime(
         "%Y-%m-%d %H:%M:%S", time.localtime(user[29]))
-    Plan_id = onQuery('SELECT name FROM v2_plan WHERE id = %s' % user[23])[0][0]
+    Plan_id = onQuery('SELECT name FROM v2_plan WHERE id = %s' %
+                      user[23])[0][0]
     Expire_time = '长期有效'
     if user[27] is not None:
         Expire_time = time.strftime(
