@@ -7,10 +7,10 @@ desc = '获取我的订阅链接'
 config = bot.config['bot']
 
 
-def getContent(uuid):
+def getContent(token):
     header = '📚*订阅链接*\n\n🔮通用订阅地址为（点击即可复制）：\n'
     tolink = '`%s/api/v1/client/subscribe?token=%s`' % (
-        config['website'], uuid)
+        config['website'], token)
     buttom = '\n\n⚠️*如果订阅链接泄露请前往官网重置！*'
     keyboard = []
     text = f'{header}{tolink}{buttom}'
@@ -32,7 +32,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if chat_type == 'private':
         db = MysqlUtils()
         user = db.sql_query(
-            'SELECT uuid FROM v2_user WHERE `telegram_id` = %s' % user_id)
+            'SELECT token FROM v2_user WHERE `telegram_id` = %s' % user_id)
         db.close()
         if len(user) > 0:
             text, reply_markup = getContent(user[0][0])
