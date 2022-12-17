@@ -35,7 +35,7 @@ def getContent(user,chat_type):
         (user[6]-user[5]-user[4]) / 1024 / 1024 / 1024, 2)
     Data_Time = time.strftime(
         "%Y-%m-%d %H:%M:%S", time.localtime(user[7]))
-    Email = user[7]
+    Email = user[8]
 
     text = f'{text}\n🎲*UID：* {User_id}'
     if chat_type == 'private':
