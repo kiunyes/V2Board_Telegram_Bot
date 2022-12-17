@@ -21,6 +21,15 @@ def onLogin(email, password):
         return False
 
 
+def onQuery(sql):
+    try:
+        db = MysqlUtils()
+        result = db.sql_query(sql)
+    finally:
+        db.close()
+        return result
+
+
 async def autoDelete(context: ContextTypes.DEFAULT_TYPE) -> None:
     job = context.job
     await context.bot.delete_message(job.chat_id, job.data)
@@ -32,17 +41,17 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = msg.chat_id
     chat_type = msg.chat.type
     if chat_type == 'private':
-        db = MysqlUtils()
-        user = db.sql_query(
+        user = onQuery(
             'SELECT * FROM v2_user WHERE `telegram_id` = %s' % user_id)
         if len(user) == 0:
             if len(context.args) == 2:
                 email = context.args[0]
                 password = context.args[1]
                 if onLogin(email, password) is True:
-                    check = db.sql_query(
+                    check = onQuery(
                         'SELECT telegram_id FROM v2_user WHERE `email` = "%s"' % email)[0]
                     if check[0] is None:
+                        db = MysqlUtils()
                         db.update_one('v2_user', params={
                             'telegram_id': user_id}, conditions={'email': email})
                         db.conn.commit()

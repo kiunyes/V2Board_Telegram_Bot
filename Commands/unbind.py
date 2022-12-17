@@ -21,6 +21,15 @@ def onLogin(email, password):
         return False
 
 
+def onQuery(sql):
+    try:
+        db = MysqlUtils()
+        result = db.sql_query(sql)
+    finally:
+        db.close()
+        return result
+
+
 async def autoDelete(context: ContextTypes.DEFAULT_TYPE) -> None:
     job = context.job
     await context.bot.delete_message(job.chat_id, job.data)
@@ -32,8 +41,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = msg.chat_id
     chat_type = msg.chat.type
     if chat_type == 'private':
-        db = MysqlUtils()
-        user = db.sql_query(
+        user = onQuery(
             'SELECT * FROM v2_user WHERE `telegram_id` = %s' % user_id)
         if len(user) == 0:
             await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
@@ -42,9 +50,10 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 email = context.args[0]
                 password = context.args[1]
                 if onLogin(email, password) is True:
-                    check = db.sql_query(
-                        'SELECTtelegram_id* FROM v2_user WHERE `email` = "%s"' % email)
+                    check = onQuery(
+                        'SELECT telegram_id FROM v2_user WHERE `email` = "%s"' % email)
                     if user_id == check[0][0]:
+                        db = MysqlUtils()
                         db.execute_sql(
                             sql='UPDATE v2_user SET telegram_id = NULL WHERE email = "%s"' % email)
                         db.conn.commit()

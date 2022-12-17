@@ -17,7 +17,7 @@ def onQuery(sql):
         return result
 
 
-def getContent(user):
+def getContent(user,chat_type):
     text = '📋*个人信息*\n'
     User_id = user[0]
     Register_time = time.strftime(
@@ -35,8 +35,11 @@ def getContent(user):
         (user[6]-user[5]-user[4]) / 1024 / 1024 / 1024, 2)
     Data_Time = time.strftime(
         "%Y-%m-%d %H:%M:%S", time.localtime(user[7]))
+    Email = user[7]
 
     text = f'{text}\n🎲*UID：* {User_id}'
+    if chat_type == 'private':
+        text = f'{text}\n📧*注册邮箱：* {Email}'
     text = f'{text}\n⌚️*注册时间：* {Register_time}'
     text = f'{text}\n📚*套餐名称：* {Plan_id}'
     text = f'{text}\n📌*到期时间：* {Expire_time}'
@@ -61,11 +64,11 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_type = msg.chat.type
 
     user = onQuery(
-        'SELECT id,created_at,plan_id,expired_at,u,d,transfer_enable,t FROM v2_user WHERE `telegram_id` = %s' % user_id)
+        'SELECT id,created_at,plan_id,expired_at,u,d,transfer_enable,t,email FROM v2_user WHERE `telegram_id` = %s' % user_id)
     if chat_type == 'private' or chat_id == config['group_id']:
         if len(user) > 0:
             if user[0][2] is not None:
-                text = getContent(user[0])
+                text = getContent(user[0],chat_type)
                 callback = await msg.reply_markdown(text)
             else:
                 callback = await msg.reply_markdown('❌*错误*\n你的账号没有购买过订阅！')
