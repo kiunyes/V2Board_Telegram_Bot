@@ -24,4 +24,6 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         group = f'\n群组ID为：`{chat_id}`'
         callback = await msg.reply_markdown(f'{utid}{group}')
         context.job_queue.run_once(
+                autoDelete, 15, data=msg.id, chat_id=chat_id, name=str(msg.id))
+        context.job_queue.run_once(
             autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

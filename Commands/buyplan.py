@@ -10,7 +10,7 @@ config = bot.config['bot']
 def onQuery():
     try:
         db = MysqlUtils()
-        result = db.sql_query('SELECT * FROM v2_plan WHERE `show` = 1')
+        result = db.sql_query('SELECT id,name FROM v2_plan WHERE `show` = 1')
     finally:
         db.close()
         return result
@@ -23,7 +23,7 @@ def getContent():
     url = '%s/#/plan/' % config['website']
     for i in plan:
         keyboard.append([InlineKeyboardButton(
-            text=f'购买 {i[3]}', url=f"{url}{i[0]}")])
+            text=f'购买 {i[1]}', url=f"{url}{i[0]}")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     return text, reply_markup
 
@@ -42,5 +42,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         text, reply_markup = getContent()
         callback = await msg.reply_markdown(text, reply_markup=reply_markup)
         if chat_type != 'private':
+            context.job_queue.run_once(
+                autoDelete, 15, data=msg.id, chat_id=chat_id, name=str(msg.id))
             context.job_queue.run_once(
                 autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

@@ -21,20 +21,20 @@ def getContent(user):
     text = '📋*个人信息*\n'
     User_id = user[0]
     Register_time = time.strftime(
-        "%Y-%m-%d %H:%M:%S", time.localtime(user[29]))
+        "%Y-%m-%d %H:%M:%S", time.localtime(user[1]))
     Plan_id = onQuery('SELECT name FROM v2_plan WHERE id = %s' %
-                      user[23])[0][0]
+                      user[2])[0][0]
     Expire_time = '长期有效'
-    if user[27] is not None:
+    if user[3] is not None:
         Expire_time = time.strftime(
-            "%Y-%m-%d %H:%M:%S", time.localtime(user[28]))
-    Data_Upload = round(user[13] / 1024 / 1024 / 1024, 2)
-    Data_Download = round(user[14] / 1024 / 1024 / 1024, 2)
-    Data_Total = round(user[15] / 1024 / 1024 / 1024, 2)
+            "%Y-%m-%d %H:%M:%S", time.localtime(user[3]))
+    Data_Upload = round(user[4] / 1024 / 1024 / 1024, 2)
+    Data_Download = round(user[5] / 1024 / 1024 / 1024, 2)
+    Data_Total = round(user[6] / 1024 / 1024 / 1024, 2)
     Data_Last = round(
-        (user[15]-user[14]-user[13]) / 1024 / 1024 / 1024, 2)
+        (user[6]-user[5]-user[4]) / 1024 / 1024 / 1024, 2)
     Data_Time = time.strftime(
-        "%Y-%m-%d %H:%M:%S", time.localtime(user[12]))
+        "%Y-%m-%d %H:%M:%S", time.localtime(user[7]))
 
     text = f'{text}\n🎲*UID：* {User_id}'
     text = f'{text}\n⌚️*注册时间：* {Register_time}'
@@ -61,10 +61,10 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_type = msg.chat.type
 
     user = onQuery(
-        'SELECT * FROM v2_user WHERE `telegram_id` = %s' % user_id)
+        'SELECT id,created_at,plan_id,expired_at,u,d,transfer_enable,t FROM v2_user WHERE `telegram_id` = %s' % user_id)
     if chat_type == 'private' or chat_id == config['group_id']:
         if len(user) > 0:
-            if user[0][23] is not None:
+            if user[0][2] is not None:
                 text = getContent(user[0])
                 callback = await msg.reply_markdown(text)
             else:
@@ -72,5 +72,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         else:
             callback = await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
     if chat_type != 'private':
+        context.job_queue.run_once(
+            autoDelete, 15, data=msg.id, chat_id=chat_id, name=str(msg.id))
         context.job_queue.run_once(
             autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

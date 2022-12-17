@@ -41,8 +41,8 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 password = context.args[1]
                 if onLogin(email, password) is True:
                     check = db.sql_query(
-                        'SELECT * FROM v2_user WHERE `email` = "%s"' % email)
-                    if check[0][2] is None:
+                        'SELECT telegram_id FROM v2_user WHERE `email` = "%s"' % email)[0]
+                    if check[0] is None:
                         db.update_one('v2_user', params={
                             'telegram_id': user_id}, conditions={'email': email})
                         db.conn.commit()
@@ -59,5 +59,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     else:
         if chat_id == config['group_id']:
             callback = await msg.reply_markdown('❌*错误*\n为了你的账号安全，请私聊我！')
+            context.job_queue.run_once(
+                autoDelete, 15, data=msg.id, chat_id=chat_id, name=str(msg.id))
             context.job_queue.run_once(
                 autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

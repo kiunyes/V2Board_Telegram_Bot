@@ -28,4 +28,6 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         callback = await msg.reply_markdown(text, reply_markup=reply_markup)
         if chat_type != 'private':
             context.job_queue.run_once(
+                autoDelete, 15, data=msg.id, chat_id=chat_id, name=str(msg.id))
+            context.job_queue.run_once(
                 autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))

@@ -31,25 +31,24 @@ def onQuery(sql):
 def getNewTicket():
     global ticket_total
     global ticket_status
-    result = onQuery("SELECT * FROM v2_ticket_message")
+    result = onQuery("SELECT id,user_id FROM v2_ticket_message")
     if ticket_total != 0 and len(result) > ticket_total:
         for i in range(ticket_total, len(result)):
             ticket = result[i]
-            getUser = onQuery('SELECT * FROM v2_user WHERE `id` = %s' %
-                              ticket[1])
-            if getUser[0][17] == 0 and getUser[0][18] == 0:
+            getUser = onQuery('SELECT is_admin,is_staff FROM v2_user WHERE `id` = %s' %
+                              ticket[1])[0]
+            if getUser[0] == 0 and getUser[1] == 0:
                 ticket_status.append(ticket[0])
     ticket_total = len(result)
 
 
 def onTicketData(current_ticket):
-    getUser = onQuery('SELECT * FROM v2_user WHERE `id` = %s' %
-                      current_ticket[1])
-    User = getUser[0][3]
-    getTitle = onQuery('SELECT * FROM v2_ticket WHERE `id` = %s' %
-                       current_ticket[2])
-    Subject = getTitle[0][2]
-    Level = mapping['Level'][getTitle[0][3]]
+    User = onQuery('SELECT email FROM v2_user WHERE `id` = %s' %
+                      current_ticket[1])[0][0]
+    getTitle = onQuery('SELECT subject,level FROM v2_ticket WHERE `id` = %s' %
+                       current_ticket[2])[0]
+    Subject = getTitle[0]
+    Level = mapping['Level'][getTitle[1]]
 
     text = '📠*新的工单*\n\n'
     text = f'{text}👤*用户*：`{User}`\n'
@@ -68,7 +67,7 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
     if len(ticket_status) > 0:
         for i in ticket_status:
             current_ticket = onQuery(
-                "SELECT * FROM v2_ticket_message WHERE id = %s" % i)
+                "SELECT id,user_id,ticket_id,message FROM v2_ticket_message WHERE id = %s" % i)
             text, reply_markup = onTicketData(current_ticket[0])
             await context.bot.send_message(
                 chat_id=cfg['admin_id'],

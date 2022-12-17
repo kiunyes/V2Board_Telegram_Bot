@@ -10,23 +10,23 @@ config = bot.config['bot']
 def onQuery(uid):
     try:
         db = MysqlUtils()
-        result1 = db.sql_query(
-            'SELECT * FROM v2_invite_code WHERE user_id = %s' % uid)
-        result2 = db.count_sql_query(
+        code = db.sql_query(
+            'SELECT code FROM v2_invite_code WHERE user_id = %s' % uid)
+        count = db.count_sql_query(
             'v2_user', sql_condition='WHERE invite_user_id = %s' % uid)
     finally:
         db.close()
-        return result1, result2
+        return code, count
 
 
 def getContent(uid):
-    code, times = onQuery(uid)
+    code, count = onQuery(uid)
     text = '❌*错误*\n你还没有生成过邀请码，点击前往网站生成一个吧！'
     if len(code) > 0:
         header = '📚*邀请信息*\n\n🔮邀请地址为（点击即可复制）：\n'
         tolink = '`%s/#/register?code=%s`' % (
-            config['website'], code[0][2])
-        buttom = '\n\n👪*邀请人数：* %s' % times
+            config['website'], code[0][0])
+        buttom = '\n\n👪*邀请人数：* %s' % count
         text = f'{header}{tolink}{buttom}'
 
     return text
@@ -45,7 +45,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         db = MysqlUtils()
         user = db.sql_query(
-            'SELECT * FROM v2_user WHERE `telegram_id` = %s' % user_id)
+            'SELECT id FROM v2_user WHERE `telegram_id` = %s' % user_id)
         if chat_type == 'private' or chat_id == config['group_id']:
             if len(user) > 0:
                 text = getContent(user[0][0])
@@ -53,6 +53,8 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             else:
                 callback = await msg.reply_markdown('❌*错误*\n你还没有绑定过账号！')
             if chat_type != 'private':
+                context.job_queue.run_once(
+                    autoDelete, 15, data=msg.id, chat_id=chat_id, name=str(msg.id))
                 context.job_queue.run_once(
                     autoDelete, 15, data=callback.message_id, chat_id=chat_id, name=str(callback.message_id))
     finally:

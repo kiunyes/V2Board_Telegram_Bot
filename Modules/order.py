@@ -42,31 +42,31 @@ def onQuery(sql):
 def getNewOrder():
     global order_total
     global order_status
-    result = onQuery("SELECT * FROM v2_order")
+    result = onQuery("SELECT id,status FROM v2_order")
     if order_total != 0 and len(result) > order_total:
         for i in range(order_total, len(result)):
-            status = result[i][17]
+            status = result[i][1]
             if status == 0 or status == 1:
                 order_status.append(result[i][0])
     order_total = len(result)
 
 
 def onOrderData(current_order):
-    getUser = onQuery('SELECT * FROM v2_user WHERE `id` = %s' %
-                      current_order[2])
-    User = getUser[0][3]
-    getPlan = onQuery('SELECT * FROM v2_plan WHERE `id` = %s' %
-                      current_order[3])
-    Plan = getPlan[0][3]
+    getUser = onQuery('SELECT email FROM v2_user WHERE `id` = %s' %
+                      current_order[0])
+    User = getUser[0][0]
+    getPlan = onQuery('SELECT name FROM v2_plan WHERE `id` = %s' %
+                      current_order[1])
+    Plan = getPlan[0][0]
     Payment = '无'
-    if current_order[5] is not None:
+    if current_order[2] is not None:
         getPaygate = onQuery(
-            'SELECT * FROM v2_payment WHERE `id` = %s' % current_order[5])
-        Payment = getPaygate[0][3]
+            'SELECT name FROM v2_payment WHERE `id` = %s' % current_order[2])
+        Payment = getPaygate[0][0]
 
-    Type = mapping['Type'][current_order[6]]
-    Period = mapping['Period'][current_order[7]]
-    Amount = round(current_order[10] / 100, 2)
+    Type = mapping['Type'][current_order[3]]
+    Period = mapping['Period'][current_order[4]]
+    Amount = round(current_order[5] / 100, 2)
     Paid_Time = datetime.fromtimestamp(
         (current_order[21]), timezone).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -87,11 +87,11 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
     global order_status
     if len(order_status) > 0:
         for i in order_status:
-            current_order = onQuery("SELECT * FROM v2_order WHERE id = %s" % i)
-            if current_order[0][17] == 2:
+            current_order = onQuery("SELECT user_id,plan_id,payment_id,type,period,total_amount,status FROM v2_order WHERE id = %s" % i)
+            if current_order[0][6] == 2:
                 order_status.remove(i)
-            elif current_order[0][17] == 3 or current_order[0][17] == 4:
-                if current_order[0][10] > 0 and current_order[0][5] is not None:
+            elif current_order[0][6] == 3 or current_order[0][6] == 4:
+                if current_order[0][5] > 0 and current_order[0][2] is not None:
                     text = onOrderData(current_order[0])
                     await context.bot.send_message(
                         chat_id=cfg['admin_id'],
