@@ -3,7 +3,7 @@ from handler import MysqlUtils
 from telegram import Update
 from telegram.ext import ContextTypes
 
-desc = '获取我的使用信息'
+desc = '获取我的邀请信息'
 config = bot.config['bot']
 
 
