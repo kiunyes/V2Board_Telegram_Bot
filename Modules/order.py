@@ -68,7 +68,7 @@ def onOrderData(current_order):
     Period = mapping['Period'][current_order[4]]
     Amount = round(current_order[5] / 100, 2)
     Paid_Time = datetime.fromtimestamp(
-        (current_order[21]), timezone).strftime("%Y-%m-%d %H:%M:%S")
+        (current_order[7]), timezone).strftime("%Y-%m-%d %H:%M:%S")
 
     text = '📠*新的订单*\n\n'
     text = f'{text}👤*用户*：`{User}`\n'
@@ -87,7 +87,7 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
     global order_status
     if len(order_status) > 0:
         for i in order_status:
-            current_order = onQuery("SELECT user_id,plan_id,payment_id,type,period,total_amount,status FROM v2_order WHERE id = %s" % i)
+            current_order = onQuery("SELECT user_id,plan_id,payment_id,type,period,total_amount,status,paid_at FROM v2_order WHERE id = %s" % i)
             if current_order[0][6] == 2:
                 order_status.remove(i)
             elif current_order[0][6] == 3 or current_order[0][6] == 4:

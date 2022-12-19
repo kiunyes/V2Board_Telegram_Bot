@@ -73,7 +73,7 @@ def onSendServer():
 
 def onSendUser():
     result = onQuery(
-        "SELECT id,u,d FROM v2_stat_user WHERE record_at = %s" % getTimestemp())
+        "SELECT user_id,u,d FROM v2_stat_user WHERE record_at = %s" % getTimestemp())
     result_dict = {}
     if result is not None and len(result) > 0:
         for i in result:
