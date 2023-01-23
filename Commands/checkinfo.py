@@ -60,7 +60,7 @@ async def exec(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = msg.chat_id
     chat_type = msg.chat.type
 
-    if user_id == config['admin_id'] and (chat_type == 'private' or chat_id == config['group_id']):
+    if user_id in config['admin_id'] and (chat_type == 'private' or chat_id == config['group_id']):
         if msg.reply_to_message:
             reply_id = msg.reply_to_message.from_user.id
             user = onQuery(

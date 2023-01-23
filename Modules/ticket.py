@@ -10,7 +10,7 @@ class Conf:
     interval = 60
 
 
-cfg = bot.config['bot']
+config = bot.config['bot']
 ticket_total = 0
 ticket_status = []
 
@@ -44,7 +44,7 @@ def getNewTicket():
 
 def onTicketData(current_ticket):
     User = onQuery('SELECT email FROM v2_user WHERE `id` = %s' %
-                      current_ticket[1])[0][0]
+                   current_ticket[1])[0][0]
     getTitle = onQuery('SELECT subject,level FROM v2_ticket WHERE `id` = %s' %
                        current_ticket[2])[0]
     Subject = getTitle[0]
@@ -56,7 +56,7 @@ def onTicketData(current_ticket):
     text = f'{text}🔔*级别*：{Level}\n'
     text = f'{text}🧾*内容*：{current_ticket[3]}\n'
     keyboard = [[InlineKeyboardButton(
-        text='回复工单', url=f"{cfg['website']}/admin#/ticket/{current_ticket[2]}")]]
+        text='回复工单', url=f"{config['website']}/admin#/ticket/{current_ticket[2]}")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return text, reply_markup
 
@@ -69,10 +69,11 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
             current_ticket = onQuery(
                 "SELECT id,user_id,ticket_id,message FROM v2_ticket_message WHERE id = %s" % i)
             text, reply_markup = onTicketData(current_ticket[0])
-            await context.bot.send_message(
-                chat_id=cfg['admin_id'],
-                text=text,
-                reply_markup=reply_markup,
-                parse_mode='Markdown'
-            )
+            for admin_id in config['admin_id']:
+                await context.bot.send_message(
+                    chat_id=admin_id,
+                    text=text,
+                    reply_markup=reply_markup,
+                    parse_mode='Markdown'
+                )
             ticket_status.remove(i)

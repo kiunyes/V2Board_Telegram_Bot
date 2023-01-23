@@ -27,6 +27,12 @@ VERSION = "2.0"
 try:
     f = open('config.yaml', 'r')
     config = yaml.safe_load(f)
+    # 兼容老config
+    if isinstance(config['bot']['admin_id'],int) is True:
+        with open("config.yaml","w",encoding="utf-8") as f:
+            admin_id = [config['bot']['admin_id']]
+            config['bot']['admin_id'] = admin_id
+            yaml.dump(config,f)
 except FileNotFoundError as error:
     print('没有找到 config.yaml，请复制 config.yaml.example 并重命名为 config.yaml')
     sys.exit(0)

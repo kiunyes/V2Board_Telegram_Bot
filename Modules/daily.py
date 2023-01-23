@@ -28,7 +28,7 @@ class Settings:
     send_order = True
 
 
-cfg = bot.config['bot']
+config = bot.config['bot']
 
 
 def onQuery(sql):
@@ -64,7 +64,8 @@ def onSendServer():
             tbl_name = f'v2_server_{result_list[i][1]}'
             node_name = onQuery(
                 f"SELECT name FROM {tbl_name} WHERE id = {result_list[i][0]}")[0][0]
-            download = round((result_list[i][2] + result_list[i][3]) / 1024 / 1024 / 1024, 2)
+            download = round(
+                (result_list[i][2] + result_list[i][3]) / 1024 / 1024 / 1024, 2)
             text = f'{text}{node_name} - `{download}` GB\n'
         return text
     else:
@@ -140,14 +141,15 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
     result, text = onTodayData()
     if result is True:
         await context.bot.send_message(
-            chat_id=cfg['group_id'],
+            chat_id=config['group_id'],
             text=text,
             parse_mode='Markdown'
         )
     result, text = onTodayOrderData()
     if result is True:
-        await context.bot.send_message(
-            chat_id=cfg['admin_id'],
-            text=text,
-            parse_mode='Markdown'
-        )
+        for admin_id in config['admin_id']:
+            await context.bot.send_message(
+                chat_id=admin_id,
+                text=text,
+                parse_mode='Markdown'
+            )

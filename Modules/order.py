@@ -10,8 +10,9 @@ class Conf:
     method = 'repeating'
     interval = 60
 
+
 timezone = pytz.timezone('Asia/Shanghai')
-cfg = bot.config['bot']
+config = bot.config['bot']
 order_total = 0
 order_status = []
 
@@ -87,15 +88,17 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
     global order_status
     if len(order_status) > 0:
         for i in order_status:
-            current_order = onQuery("SELECT user_id,plan_id,payment_id,type,period,total_amount,status,paid_at FROM v2_order WHERE id = %s" % i)
+            current_order = onQuery(
+                "SELECT user_id,plan_id,payment_id,type,period,total_amount,status,paid_at FROM v2_order WHERE id = %s" % i)
             if current_order[0][6] == 2:
                 order_status.remove(i)
             elif current_order[0][6] == 3 or current_order[0][6] == 4:
                 if current_order[0][5] > 0 and current_order[0][2] is not None:
                     text = onOrderData(current_order[0])
-                    await context.bot.send_message(
-                        chat_id=cfg['admin_id'],
-                        text=text,
-                        parse_mode='Markdown'
-                    )
+                    for admin_id in config['admin_id']:
+                        await context.bot.send_message(
+                            chat_id=admin_id,
+                            text=text,
+                            parse_mode='Markdown'
+                        )
                 order_status.remove(i)
