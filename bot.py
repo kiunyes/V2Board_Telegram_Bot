@@ -28,11 +28,11 @@ try:
     f = open('config.yaml', 'r')
     config = yaml.safe_load(f)
     # 兼容老config
-    if isinstance(config['bot']['admin_id'],int) is True:
-        with open("config.yaml","w",encoding="utf-8") as f:
+    if isinstance(config['bot']['admin_id'], int) is True:
+        with open("config.yaml", "w", encoding="utf-8") as f:
             admin_id = [config['bot']['admin_id']]
             config['bot']['admin_id'] = admin_id
-            yaml.dump(config,f)
+            yaml.dump(config, f)
 except FileNotFoundError as error:
     print('没有找到 config.yaml，请复制 config.yaml.example 并重命名为 config.yaml')
     sys.exit(0)
@@ -42,11 +42,20 @@ try:
     db_cfg = config['v2board']['database']
     port = db_cfg['port']
     if ssh_cfg['enable'] is True:
-        ssh = SSHTunnelForwarder(
-            ssh_address_or_host=(ssh_cfg['ip'], ssh_cfg['port']),
-            ssh_username=ssh_cfg['user'],
-            ssh_password=ssh_cfg['pass'],
-            remote_bind_address=(db_cfg['ip'], db_cfg['port']))
+        if ssh_cfg['type'] == "passwd":
+            ssh = SSHTunnelForwarder(
+                ssh_address_or_host=(ssh_cfg['ip'], ssh_cfg['port']),
+                ssh_username=ssh_cfg['user'],
+                ssh_password=ssh_cfg['pass'],
+                remote_bind_address=(db_cfg['ip'], db_cfg['port']))
+                
+        if ssh_cfg['type'] == "pkey":
+            ssh = SSHTunnelForwarder(
+                ssh_address_or_host=(ssh_cfg['ip'], ssh_cfg['port']),
+                ssh_username=ssh_cfg['user'],
+                ssh_pkey=ssh_cfg['keyfile'],
+                ssh_private_key_password=ssh_cfg['keypass'],
+                remote_bind_address=(db_cfg['ip'], db_cfg['port']))
         ssh.start()
         port = ssh.local_bind_port
 except Exception as error:

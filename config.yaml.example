@@ -1,9 +1,9 @@
 bot:
   website: https://awesomeV2Board.com
   token: 1234:1234567890abcdef
-  admin_id: 
-  - 0
-  - 0
+  admin_id:
+    - 0
+    - 0
   group_id: 0
 v2board:
   database:
@@ -14,7 +14,11 @@ v2board:
     name: database
   ssh:
     enable: false
+    # type: passwd
+    type: pkey
     ip: 127.0.0.1
     port: 22
     user: root
-    pass: password
+    # pass: password
+    keyfile: sshkey.pem
+    keypass: ''
