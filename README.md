@@ -1,5 +1,9 @@
-# V2Board_Python_Bot
-莫得描述、莫得感情  
+# V2Board_Python_Bot docker
+
+https://hub.docker.com/r/moefaq/v2board_python_bot-docker
+
+![Docker Pulls](https://img.shields.io/docker/pulls/moefaq/v2board_python_bot-docker?style=for-the-badge)
+
 ![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/moefaq/v2board_python_bot-docker?style=for-the-badge)
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/moefaq/v2board_python_bot-docker?style=for-the-badge)
 
