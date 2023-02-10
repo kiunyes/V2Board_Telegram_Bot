@@ -42,7 +42,7 @@ nano config.yaml
 # 编辑 line 4、5 为你的ID和群ID，通过 /ping 获取
 # 编辑 line 8~12 为你的MySQL连接信息
 # 编辑 line 14 如果你需要SSH连接数据库 则为true
-# 编辑 line 15~18 为你的SSH连接信息
+# 编辑 line 15~24 为你的SSH连接信息
 python3 bot.py
 ```
 
