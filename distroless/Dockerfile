@@ -19,7 +19,7 @@ RUN /venv/bin/pip install --disable-pip-version-check -r /requirements.txt
 # RUN pip install --no-cache-dir -r ./requirements.txt
 # RUN apk del .build-deps
 
-FROM gcr.io/distroless/python3-debian11:debug
+FROM gcr.io/distroless/python3-debian11
 COPY --from=build-venv /venv /venv
 ADD V2Board_Python_Bot /V2Board_Python_Bot
 WORKDIR /V2Board_Python_Bot
