@@ -1,5 +1,5 @@
 FROM python:3.11-alpine AS build
-ADD ./V2Board_Python_Bot/requirements.txt /build/requirements.txt
+ADD requirements.txt /build/requirements.txt
 WORKDIR /build
 RUN apk update
 RUN apk add --no-cache --virtual .build-deps git build-base libffi-dev libstdc++
@@ -11,6 +11,7 @@ FROM python:3.11-alpine
 COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 RUN apk update
 RUN apk add --no-cache libstdc++
-ADD V2Board_Python_Bot /V2Board_Python_Bot
+ADD / /V2Board_Python_Bot
 WORKDIR /V2Board_Python_Bot
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
 CMD ["python3","bot.py"]

@@ -6,11 +6,38 @@ networks:
 services:
   bot:
     image: moefaq/v2board_python_bot-docker
-    volumes:
-      - "<V2Board_Python_Bot-docker_data>/config.yaml:/V2Board_Python_Bot/config.yaml"
-      - "<V2Board_Python_Bot-docker_data>/sshkey.pem:/V2Board_Python_Bot/sshkey.pem"
+    # volumes:
+    #   - "<V2Board_Python_Bot-docker_data>/config.yaml:/V2Board_Python_Bot/config.yaml"
+    #   - "<V2Board_Python_Bot-docker_data>/sshkey.pem:/V2Board_Python_Bot/sshkey.pem"
     restart: always
     environment:
       TZ: Asia/Shanghai
+      BOT_WEBSITE: https://awesomeV2Board.com
+      BOT_TOKEN: 1234:1234567890abcdef
+      BOT_ADMIN_PATH: admin
+      BOT_ADMIN_ID: 123456789,987654321
+      BOT_GROUP_ID: -741258963
+      V2BOARD_DB_IP: 127.0.0.1
+      V2BOARD_DB_PORT: 3306
+      V2BOARD_DB_USER: dbuser
+      V2BOARD_DB_PASS: dbpasswd
+      V2BOARD_DB_NAME: dbname
+      V2BOARD_DB_SSH_ENABLE: false
+      V2BOARD_DB_SSH_TYPE: pkey
+      V2BOARD_DB_SSH_IP: host.docker.internal
+      V2BOARD_DB_SSH_PORT: 22
+      V2BOARD_DB_SSH_USER: sshtunnel-agent-user
+      V2BOARD_DB_SSH_PASS: 
+      V2BOARD_DB_SSH_KEY: |-
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        exampleEXAMPLE1234567exampleEXAMPLE1234567exampleEXAMPLE1234567example
+        EXAMPLE1234567exampleEXAMPLE1234567exampleEXAMPLE1234567exampleEXAMPLE
+        1234567exampleEXAMPLE1234567exampleEXAMPLE1234567exampleEXAMPLE1234567
+        exampleEXAMPLE1234567exampleEXAMPLE1234567exampleEXAMPLE1234567example
+        EXAMPLE1234567exampleEXAMPLE1234
+        -----END OPENSSH PRIVATE KEY-----
+      V2BOARD_DB_SSH_KEYPASS: 
     networks:
       - V2Board_Python_Bot
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

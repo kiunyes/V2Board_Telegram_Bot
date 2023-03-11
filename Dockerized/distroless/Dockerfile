@@ -13,14 +13,8 @@ FROM build AS build-venv
 COPY V2Board_Python_Bot/requirements.txt /requirements.txt
 RUN /venv/bin/pip install --disable-pip-version-check -r /requirements.txt
 
-# RUN apk update
-# RUN apk add --no-cache --virtual .build-deps git build-base libffi-dev libstdc++
-# RUN pip install --upgrade pip
-# RUN pip install --no-cache-dir -r ./requirements.txt
-# RUN apk del .build-deps
-
 FROM gcr.io/distroless/python3-debian11
 COPY --from=build-venv /venv /venv
-ADD V2Board_Python_Bot /V2Board_Python_Bot
+ADD / /V2Board_Python_Bot
 WORKDIR /V2Board_Python_Bot
 ENTRYPOINT [ "/venv/bin/python3","bot.py" ]
