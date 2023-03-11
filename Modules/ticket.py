@@ -56,7 +56,7 @@ def onTicketData(current_ticket):
     text = f'{text}🔔*级别*：{Level}\n'
     text = f'{text}🧾*内容*：{current_ticket[3]}\n'
     keyboard = [[InlineKeyboardButton(
-        text='回复工单', url=f"{config['website']}/admin#/ticket/{current_ticket[2]}")]]
+        text='回复工单', url=f"{config['website']}/{config['admin_path']}#/ticket/{current_ticket[2]}")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return text, reply_markup
 
