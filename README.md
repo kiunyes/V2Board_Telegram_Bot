@@ -29,7 +29,7 @@
 Python 版本需求 >= 3.8
 
 ## 现有功能
-- 基于MySQl，支持以SSH方式登录
+- 基于MySQL，支持以SSH方式登录
 - 自动删除群聊中信息
 - 自动推送订单、工单给管理
 - 每日自动推送数据统计
@@ -53,10 +53,10 @@ Python 版本需求 >= 3.8
 ## 常规使用
 ```
 # apt install git 如果你没有git的话
-git clone https://github.com/DyAxy/V2Board_Python_Bot.git
+git clone https://github.com/DyAxy/V2Board_Telegram_Bot.git
 # 进程常驻可参考 screen 或 nohup
 # 你需要安装好 pip3 的包管理
-cd V2Board_Python_Bot
+cd V2Board_Telegram_Bot
 pip3 install -r requirements.txt
 cp config.yaml.example config.yaml
 nano config.yaml
