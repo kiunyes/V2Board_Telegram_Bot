@@ -45,7 +45,7 @@ def getNewOrder():
     global order_status
     result = onQuery("SELECT id,status FROM v2_order")
     if order_total != 0 and len(result) > order_total:
-        for i in range(order_total, len(result)):
+        for i in range(order_total-1, len(result)):
             status = result[i][1]
             if status == 0 or status == 1:
                 order_status.append(result[i][0])

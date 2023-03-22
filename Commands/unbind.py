@@ -13,8 +13,9 @@ def onLogin(email, password):
         "email": email,
         "password": password
     }
-    x = requests.post(
-        '%s/api/v1/passport/auth/login' % config['website'], login)
+    url = '%s/api/v1/passport/auth/login' % config['website']
+    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
+    x = requests.post(url, login, headers=headers, timeout=5)
     if x.status_code == 200:
         return True
     else:
