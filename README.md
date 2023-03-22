@@ -177,19 +177,21 @@ docker-compose命令属于Compose V1使用的独立命令；
 | BOT_ADMIN_PATH         | v2board的后台路径<br>e.g. admin                                                                                                                                                                   |
 | BOT_ADMIN_ID           | 管理员telegram id，使用半角逗号(,)分隔。<br>e.g. 123456789,321654987,555555,111222                                                                                                                |
 | BOT_GROUP_ID           | 群组的telegram id<br>e.g. -147258369                                                                                                                                                              |
-| V2BOARD_DB_IP          | 可访问v2board数据库的IP<br>bot与v2board数据库部署于同一主机时，请阅读[2.6 特别说明](#26-特别说明)                                                                                                             |
+| V2BOARD_DB_IP          | 可访问v2board数据库的IP<br>bot与v2board数据库部署于同一主机时，请阅读[2.6 特别说明](#26-特别说明)                                                                                                 |
 | V2BOARD_DB_PORT        | 可访问v2board数据库的端口                                                                                                                                                                         |
 | V2BOARD_DB_USER        | 可访问v2board数据库的用户名                                                                                                                                                                       |
 | V2BOARD_DB_PASS        | 可访问v2board数据库的用户密码                                                                                                                                                                     |
 | V2BOARD_DB_NAME        | v2board数据库名称                                                                                                                                                                                 |
 | V2BOARD_DB_SSH_ENABLE  | 是否启用ssh进行数据库连接。<br>可选值为：true / false                                                                                                                                             |
 | V2BOARD_DB_SSH_TYPE    | ssh认证方式。<br>可选值为：passwd / pkey<br>值为passwd时，使用密码进行认证，V2BOARD_DB_SSH_KEY 与 V2BOARD_DB_SSH_KEYPASS将不生效。<br>值为pkey时，使用私钥进行认证，V2BOARD_DB_SSH_PASS将不生效。 |
-| V2BOARD_DB_SSH_IP      | 数据库所在主机的IP。<br>bot与v2board数据库部署于同一主机时，请阅读[2.6 特别说明](#26-特别说明)                                                                                                                |
+| V2BOARD_DB_SSH_IP      | 数据库所在主机的IP。<br>bot与v2board数据库部署于同一主机时，请阅读[2.6 特别说明](#26-特别说明)                                                                                                    |
 | V2BOARD_DB_SSH_PORT    | 可与数据库主机进行ssh连接的端口                                                                                                                                                                   |
 | V2BOARD_DB_SSH_USER    | 用于建立ssh连接的用户名                                                                                                                                                                           |
 | V2BOARD_DB_SSH_PASS    | 用于建立ssh连接的用户密码                                                                                                                                                                         |
 | V2BOARD_DB_SSH_KEY     | 用户建立ssh连接的私钥内容。在进行该项配置时请注意：<br>1. 不能删除开头的"\|\-"；<br>2. 注意缩进                                                                                                   |
 | V2BOARD_DB_SSH_KEYPASS | 用于ssh连接的私钥密码，没有密码时该项留空                                                                                                                                                         |
+| ENHANCED_ENABLE        | 增强模式开关                                                                                                                                                                                      |
+| ENHANCED_MODULE        | 启用的增强模块，目前只有对订单推送的增强，会在你的v2board数据库里面维护两张表，用于存放推送状态，用不用自己斟酌                                                                                   |
 
 #### 2.5 Image tag说明
 | tag        | 说明                                                  | image size                                                                                                       |

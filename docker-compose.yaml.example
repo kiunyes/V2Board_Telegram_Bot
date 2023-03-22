@@ -37,6 +37,8 @@ services:
         EXAMPLE1234567exampleEXAMPLE1234
         -----END OPENSSH PRIVATE KEY-----
       V2BOARD_DB_SSH_KEYPASS: 
+      ENHANCED_ENABLE: false
+      ENHANCED_MODULE: order
     networks:
       - V2Board_Python_Bot
     extra_hosts:

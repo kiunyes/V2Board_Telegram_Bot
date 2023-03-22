@@ -1,10 +1,10 @@
 #!/bin/sh
 
 conver_to_array(){
-    local BOT_ADMIN_ID_env=$1
+    local TEMP_ARRAY=$1
     local IFS=","
     str=""
-    for admin_id in ${BOT_ADMIN_ID_env};do
+    for admin_id in ${TEMP_ARRAY};do
         str="$str    - ${admin_id}\n"
     done
     result=`echo -e "${str}"`
@@ -42,6 +42,7 @@ EOF
         esac
     fi
     conver_to_array ${BOT_ADMIN_ID}
+    BOT_ADMIN_ID_env=${result}
     cat > /V2Board_Python_Bot/config.yaml << EOF
 bot:
   website: ${BOT_WEBSITE}
@@ -59,6 +60,9 @@ v2board:
     name: ${V2BOARD_DB_NAME}
 ${ssh_conn_info}
 ${ssh_auth_info}
+enhanced:
+  enable: ${ENHANCED_ENABLE}
+  module: [${ENHANCED_MODULE}]
 EOF
 fi
 exec "$@"

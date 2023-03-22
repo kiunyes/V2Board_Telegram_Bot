@@ -23,3 +23,6 @@ v2board:
     # pass: password
     keyfile: sshkey.pem
     keypass: ''
+enhanced:
+  enable: true
+  module: [order]
