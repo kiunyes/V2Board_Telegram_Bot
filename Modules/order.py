@@ -43,6 +43,11 @@ mapping = {
     }
 }
 
+def addEscapeChar(string):
+    reserved_chars = '''\\`*_{}[]()#+-.!|'''
+    replace = ['\\' + l for l in reserved_chars]
+    trans = str.maketrans(dict(zip(reserved_chars, replace)))
+    return string.translate(trans)
 
 def onQuery(sql):
     try:
@@ -143,8 +148,8 @@ def onOrderData(current_order):
 
     text = '📠*新的订单*\n\n'
     text = f'{text}👤*用户*：`{User}`\n'
-    text = f'{text}🛍*套餐*：{Plan}\n'
-    text = f'{text}💵*支付*：{Payment}\n'
+    text = f'{text}🛍*套餐*：{addEscapeChar(Plan)}\n'
+    text = f'{text}💵*支付*：{addEscapeChar(Payment)}\n'
     text = f'{text}📥*类型*：{Type}\n'
     text = f'{text}📅*时长*：{Period}\n'
     text = f'{text}🏷*价格*：{Amount}\n'
@@ -162,12 +167,15 @@ async def exec(context: ContextTypes.DEFAULT_TYPE):
             for current_order in unsentOrdersFull:
                 text = onOrderData(current_order)
                 for admin_id in config['admin_id']:
-                    await context.bot.send_message(
-                        chat_id=admin_id,
-                        text=text,
-                        parse_mode='Markdown'
-                    )
-                markSent(current_order)
+                    try:
+                        await context.bot.send_message(
+                            chat_id=admin_id,
+                            text=text,
+                            parse_mode='Markdown'
+                        )
+                        markSent(current_order)
+                    except Exception as err:
+                        print("Failed To Send message: ", err)
     else:
         # original order push
         getNewOrder()
