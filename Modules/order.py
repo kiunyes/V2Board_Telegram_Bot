@@ -1,5 +1,7 @@
 import bot
 import pytz
+import enhanced
+import os
 from datetime import datetime
 from handler import MysqlUtils
 from telegram.ext import ContextTypes
@@ -15,6 +17,17 @@ timezone = pytz.timezone('Asia/Shanghai')
 config = bot.config['bot']
 order_total = 0
 order_status = []
+thisEnhanced = False
+
+if bot.isEnhanced:
+    if bot.enhancedModules.count('order'):
+        try:
+            enhanced.initEnhanced()
+            enhanced.dbEnhanced(os.path.basename(__file__).replace('.py', ''))
+            thisEnhanced = True
+        except Exception as err:
+            print(repr(err))
+
 
 mapping = {
     'Type': ['无', '新购', '续费', '升级', '重置'],
@@ -30,6 +43,11 @@ mapping = {
     }
 }
 
+def addEscapeChar(string):
+    reserved_chars = '''\\`*_{}[]()#+-.!|'''
+    replace = ['\\' + l for l in reserved_chars]
+    trans = str.maketrans(dict(zip(reserved_chars, replace)))
+    return string.translate(trans)
 
 def onQuery(sql):
     try:
@@ -38,6 +56,63 @@ def onQuery(sql):
     finally:
         db.close()
         return result
+
+
+def onSqlExec(sql):
+    try:
+        db = MysqlUtils()
+        result = db.execute_sql(sql)
+        if result is not None:
+            raise Exception(result)
+    finally:
+        db.close()
+
+
+def onUpdate(tableName, params, conditions):
+    try:
+        db = MysqlUtils()
+        db.update_one(tableName, params, conditions)
+    except Exception as err:
+        print(err)
+    finally:
+        db.close()
+
+
+def getUnsentOrdersFull():
+    try:
+        onSqlExec('INSERT INTO enhncd_v2_order_notice (`id`,`tg_send_mask`) SELECT `id`,0 FROM v2_order WHERE NOT EXISTS(SELECT `id` from enhncd_v2_order_notice where `id`=v2_order.`id`)')
+        sql = 'SELECT v2btb.`user_id`, v2btb.`plan_id`, v2btb.`payment_id`, v2btb.`type`, v2btb.`period`, v2btb.`total_amount`, v2btb.`status`, v2btb.`paid_at`, enhncdtb.`id`, enhncdtb.`tg_send_mask` FROM enhncd_v2_order_notice enhncdtb INNER JOIN v2_order v2btb ON enhncdtb.`id`=v2btb.`id` WHERE enhncdtb.`tg_send_mask`=0'
+        unsentOrdersFull = onQuery(sql)
+        return unsentOrdersFull
+    except Exception as err:
+        print(repr(err))
+
+
+def cleanupUnsentOrders(rows):
+    rows = list(rows)
+    try:
+        for row in rows[:]:
+            if row[6] == 0 or row[6] == 1:
+                rows.remove(row)
+            elif row[6] == 2:
+                onUpdate('enhncd_v2_order_notice', params={
+                         'tg_send_mask': -1}, conditions={'id': row[8]})
+                rows.remove(row)
+            elif (row[6] == 3 or row[6] == 4) and row[5] == 0:
+                onUpdate('enhncd_v2_order_notice', params={
+                         'tg_send_mask': -1}, conditions={'id': row[8]})
+                rows.remove(row)
+        return rows
+    except Exception as err:
+        print(repr(err))
+
+
+def markSent(row):
+    try:
+        onUpdate('enhncd_v2_order_notice', params={
+                 'tg_send_mask': 1}, conditions={'id': row[8]})
+    except Exception as err:
+        print(repr(err))
 
 
 def getNewOrder():
@@ -73,8 +148,8 @@ def onOrderData(current_order):
 
     text = '📠*新的订单*\n\n'
     text = f'{text}👤*用户*：`{User}`\n'
-    text = f'{text}🛍*套餐*：{Plan}\n'
-    text = f'{text}💵*支付*：{Payment}\n'
+    text = f'{text}🛍*套餐*：{addEscapeChar(Plan)}\n'
+    text = f'{text}💵*支付*：{addEscapeChar(Payment)}\n'
     text = f'{text}📥*类型*：{Type}\n'
     text = f'{text}📅*时长*：{Period}\n'
     text = f'{text}🏷*价格*：{Amount}\n'
@@ -84,21 +159,40 @@ def onOrderData(current_order):
 
 
 async def exec(context: ContextTypes.DEFAULT_TYPE):
-    getNewOrder()
-    global order_status
-    if len(order_status) > 0:
-        for i in order_status:
-            current_order = onQuery(
-                "SELECT user_id,plan_id,payment_id,type,period,total_amount,status,paid_at FROM v2_order WHERE id = %s" % i)
-            if current_order[0][6] == 2:
-                order_status.remove(i)
-            elif current_order[0][6] == 3 or current_order[0][6] == 4:
-                if current_order[0][5] > 0 and current_order[0][2] is not None:
-                    text = onOrderData(current_order[0])
-                    for admin_id in config['admin_id']:
+    if thisEnhanced:
+        # enhanced order push
+        unsentOrdersFull = getUnsentOrdersFull()
+        unsentOrdersFull = cleanupUnsentOrders(unsentOrdersFull)
+        if len(unsentOrdersFull) > 0:
+            for current_order in unsentOrdersFull:
+                text = onOrderData(current_order)
+                for admin_id in config['admin_id']:
+                    try:
                         await context.bot.send_message(
                             chat_id=admin_id,
                             text=text,
                             parse_mode='Markdown'
                         )
-                order_status.remove(i)
+                        markSent(current_order)
+                    except Exception as err:
+                        print("Failed To Send message: ", err)
+    else:
+        # original order push
+        getNewOrder()
+        global order_status
+        if len(order_status) > 0:
+            for i in order_status:
+                current_order = onQuery(
+                    "SELECT user_id,plan_id,payment_id,type,period,total_amount,status,paid_at FROM v2_order WHERE id = %s" % i)
+                if current_order[0][6] == 2:
+                    order_status.remove(i)
+                elif current_order[0][6] == 3 or current_order[0][6] == 4:
+                    if current_order[0][5] > 0 and current_order[0][2] is not None:
+                        text = onOrderData(current_order[0])
+                        for admin_id in config['admin_id']:
+                            await context.bot.send_message(
+                                chat_id=admin_id,
+                                text=text,
+                                parse_mode='Markdown'
+                            )
+                    order_status.remove(i)

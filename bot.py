@@ -48,7 +48,7 @@ try:
                 ssh_username=ssh_cfg['user'],
                 ssh_password=ssh_cfg['pass'],
                 remote_bind_address=(db_cfg['ip'], db_cfg['port']))
-                
+
         if ssh_cfg['type'] == "pkey":
             ssh = SSHTunnelForwarder(
                 ssh_address_or_host=(ssh_cfg['ip'], ssh_cfg['port']),
@@ -68,6 +68,16 @@ try:
 except Exception as error:
     print('无法启动 Telegram Bot，请确认 Bot Token 是否正确，或者是否能连接 Telegram 服务器')
     sys.exit(0)
+
+try:
+    if config['enhanced']['enable']:
+        isEnhanced = True
+        enhancedModules=list(config['enhanced']['module'])
+    else:
+        isEnhanced = False
+except Exception as err:
+    print('增强模组未启动成功', err)
+    isEnhanced = False
 
 
 async def onCommandSet(context: ContextTypes.DEFAULT_TYPE):

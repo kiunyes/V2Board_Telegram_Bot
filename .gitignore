@@ -2,7 +2,7 @@
 *.yaml
 *.yml
 *.pem
-
+test/
 # vscode environment
 .vscode/
 
