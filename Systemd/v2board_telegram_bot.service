@@ -1,0 +1,16 @@
+[Unit]
+Description=v2board telegram bot
+Documentation=https://github.com/DyAxy/V2board_Telegram_Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/V2board_Telegram_Bot
+ExecStart=/usr/bin/python3 bot.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
