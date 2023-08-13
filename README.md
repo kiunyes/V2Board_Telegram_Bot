@@ -86,7 +86,7 @@ python3 bot.py
 #### 2.1 通过docker run部署  
 
 ##### 2.1.1 下载配置文件到你喜欢的位置  
-    curl -JL https://github.com/DyAxy/V2Board_Python_Bot/raw/master/config.yaml.example -o config.yaml
+    curl -JL https://github.com/DyAxy/V2Board_Telegram_Bot/raw/master/config.yaml.example -o config.yaml
 
 ##### 2.1.2 按自己的情况修改config.yaml  
 
@@ -107,8 +107,8 @@ docker-compose命令属于Compose V1使用的独立命令；
 如有问题，请先参详Linux发行版的Wiki 或 [Docker Docs](https://docs.docker.com/compose/install/linux/)  
 
 ##### 2.2.2 下载配置文件及compose文件
-    curl -JL https://github.com/DyAxy/V2Board_Python_Bot/raw/master/config.yaml.example -o config.yaml
-    curl -JL https://github.com/DyAxy/V2Board_Python_Bot/raw/master/docker-compose.yaml.example -o docker-compose.yaml
+    curl -JL https://github.com/DyAxy/V2Board_Telegram_Bot/raw/master/config.yaml.example -o config.yaml
+    curl -JL https://github.com/DyAxy/V2Board_Telegram_Bot/raw/master/docker-compose.yaml.example -o docker-compose.yaml
 ***通过环境变量配置方式部署时，无需下载config.yaml.examlpe***
 
 ##### 2.2.3-A 使用环境变量进行配置时

@@ -44,7 +44,7 @@ mapping = {
 }
 
 def addEscapeChar(string):
-    reserved_chars = '''\\`*_{}[]()#+-.!|'''
+    reserved_chars = '''\\`*_{}[]()#+.!|'''
     replace = ['\\' + l for l in reserved_chars]
     trans = str.maketrans(dict(zip(reserved_chars, replace)))
     return string.translate(trans)
