@@ -1,4 +1,5 @@
 # V2Board Telegram Bot via Python
+[![Docker Image CI](https://github.com/moefaq/V2Board_Telegram_Bot/actions/workflows/ci.yml/badge.svg)](https://github.com/moefaq/V2Board_Telegram_Bot/actions/workflows/ci.yml)
 - [V2Board Telegram Bot via Python](#v2board-telegram-bot-via-python)
   - [现有功能](#现有功能)
   - [现有指令](#现有指令)
@@ -196,12 +197,11 @@ docker-compose命令属于Compose V1使用的独立命令；
 #### 2.5 Image tag说明
 | tag        | 说明                                                  | image size                                                                                                       |
 | ---------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| latest     | alpine 3.17 + python 3.8                              | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_python_bot-docker/latest)     |
-| 3.8        | 同latest                                              | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_python_bot-docker/py3.8)      |
-| 3.9        | alpine 3.17 + python 3.9                              | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_python_bot-docker/py3.9)      |
-| 3.10       | alpine 3.17 + python 3.10                             | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_python_bot-docker/py3.10)     |
-| 3.11       | alpine 3.17 + python 3.11                             | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_python_bot-docker/py3.11)     |
-| distroless | 使用google distroless镜像构建<br>debian11 +python 3.9 | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_python_bot-docker/distroless) |
+| latest     | alpine + python 3.8                              | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_telegram_bot/latest)     |
+| 3.8        | 同latest                                              | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_telegram_bot/py3.8)      |
+| 3.9        | alpine + python 3.9                              | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_telegram_bot/py3.9)      |
+| 3.10       | alpine + python 3.10                             | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_telegram_bot/py3.10)     |
+| 3.11       | alpine + python 3.11                             | ![Docker Image Size (tag)](https://img.shields.io/docker/image-size/moefaq/v2board_telegram_bot/py3.11)     |
 
 #### 2.6 特别说明
 当bot与v2board数据库部署在同一主机时，由于docker容器默认的network driver为bridge，bot将无法直接通过Loopback address（127.0.0.1/localhost/::1等）访问数据库。以下给出几种解决办法供选择：  
