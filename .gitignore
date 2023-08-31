@@ -3,6 +3,9 @@
 *.yml
 *.pem
 test/
+
+!.github/*/*
+
 # vscode environment
 .vscode/
 
