@@ -14,7 +14,7 @@ timezone = pytz.timezone('Asia/Shanghai')
 class Conf:
     desc = '定时推送用量'
     method = 'daily'
-    runtime = '00:00:00+08:00'
+    runtime = '00:10:00+08:00'
 
 
 class Settings:
