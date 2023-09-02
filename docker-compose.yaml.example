@@ -5,7 +5,7 @@ networks:
 
 services:
   bot:
-    image: moefaq/v2board_python_bot-docker
+    image: moefaq/v2board_telegram_bot
     # volumes:
     #   - "<V2Board_Python_Bot-docker_data>/config.yaml:/V2Board_Python_Bot/config.yaml"
     #   - "<V2Board_Python_Bot-docker_data>/sshkey.pem:/V2Board_Python_Bot/sshkey.pem"
