@@ -18,9 +18,18 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
     )
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logging.getLogger(__name__)
+token='********************************'
+
+class SensitiveFormatter(logging.Formatter):
+    def format(self, record):
+        recordText = logging.Formatter.format(self, record)
+        return recordText.replace(token,"***bot_token***")
+
+LOG_FORMAT ='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+logging.basicConfig(level=logging.INFO)
+logger=logging.getLogger(__name__)
+for handler in logging.root.handlers:
+   handler.setFormatter(SensitiveFormatter(LOG_FORMAT))
 
 VERSION = "2.0"
 

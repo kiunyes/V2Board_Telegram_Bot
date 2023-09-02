@@ -27,7 +27,7 @@
 一个简单的项目，让 V2Board Telegram Bot 支持更丰富的功能。
 快速反馈群：[https://t.me/v2board_python_bot](https://t.me/v2board_python_bot)
 
-Python 版本需求 >= 3.8
+Python 版本需求 >= 3.9
 
 ## 现有功能
 - 基于MySQL，支持以SSH方式登录
@@ -92,11 +92,11 @@ python3 bot.py
 ##### 2.1.2 按自己的情况修改config.yaml  
 
 ##### 2.1.3-A 运行容器(不使用SSH密钥)  
-    docker run -d --name v2bpybot -v ./config.yaml:/V2Board_Python_Bot/config.yaml moefaq/v2board_python_bot-docker:latest
+    docker run -d --name v2bpybot -v ./config.yaml:/V2Board_Python_Bot/config.yaml moefaq/v2board_telegram_bot:latest
 
 ##### 2.1.3-B 运行容器(使用SSH密钥)  
     docker run -d --name v2bpybot -v ./config.yaml:/V2Board_Python_Bot/config.yaml \
-    -v ./private.key:/V2Board_Python_Bot/private.key moefaq/v2board_python_bot-docker:latest
+    -v ./private.key:/V2Board_Python_Bot/private.key moefaq/v2board_telegram_bot:latest
 
 #### 2.2 通过docker compose部署  
 **该部署方式分为两种配置方式，环境变量配置方式更为简便**
@@ -148,7 +148,7 @@ docker-compose命令属于Compose V1使用的独立命令；
         <td>&lt;V2Board_Python_Bot-docker_data&gt;/config.yaml:/V2Board_Python_Bot/config.yaml</td>
     </tr>
     <tr>
-        <td>moefaq/v2board_python_bot-docker:latest</td>
+        <td>moefaq/v2board_telegram_bot:latest</td>
         <td>指定镜像, latest为镜像tag, 详见<a href="#25-image-tag%E8%AF%B4%E6%98%8E">2.5 Image tag说明</a></td>
     </tr>
     <tr>
